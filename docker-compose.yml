@@ -39,11 +39,33 @@ services:
       TZ: ${TZ}
       TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
 
+  caddy:
+    image: ghcr.io/quyenanh198/caddy-sablier:latest
+    restart: unless-stopped
+    mem_limit: 256m
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - ./config/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+
+  sablier:
+    image: sablierapp/sablier:latest  # pin version khi deploy thật chạy ổn
+    restart: unless-stopped
+    mem_limit: 256m
+    command: start --provider.name=docker
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
   tts-studio:
     image: ghcr.io/quyenanh198/tts-studio:latest
     profiles: [apps]
     restart: unless-stopped
     mem_limit: 3g
+    labels:
+      - sablier.enable=true
+      - sablier.group=tts
     environment:
       TZ: ${TZ}
       ENABLE_HEAVY_TTS: ${ENABLE_HEAVY_TTS}
@@ -56,6 +78,9 @@ services:
     profiles: [apps]
     restart: unless-stopped
     mem_limit: 512m
+    labels:
+      - sablier.enable=true
+      - sablier.group=cadence
     environment:
       TZ: ${TZ}
 
@@ -64,6 +89,9 @@ services:
     profiles: [apps]
     restart: unless-stopped
     mem_limit: 512m
+    labels:
+      - sablier.enable=true
+      - sablier.group=stock
     environment:
       TZ: ${TZ}
     volumes:
@@ -71,7 +99,6 @@ services:
 
   chat:
     image: ghcr.io/quyenanh198/chat:latest
-    profiles: [apps]
     restart: unless-stopped
     mem_limit: 768m
     environment:

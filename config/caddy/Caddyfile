@@ -1,0 +1,44 @@
+{
+	admin off
+}
+
+:80 {
+	@chat host chat.EXAMPLE-DOMAIN
+	handle @chat {
+		reverse_proxy chat:8082
+	}
+
+	@tts host tts.EXAMPLE-DOMAIN
+	route @tts {
+		sablier http://sablier:10000 {
+			group tts
+			session_duration 15m
+			dynamic
+		}
+		reverse_proxy tts-studio:8000
+	}
+
+	@cadence host cadence.EXAMPLE-DOMAIN
+	route @cadence {
+		sablier http://sablier:10000 {
+			group cadence
+			session_duration 15m
+			dynamic
+		}
+		reverse_proxy cadence2:3000
+	}
+
+	@stock host stock.EXAMPLE-DOMAIN
+	route @stock {
+		sablier http://sablier:10000 {
+			group stock
+			session_duration 15m
+			dynamic
+		}
+		reverse_proxy stock-site:8080
+	}
+
+	handle {
+		respond "macmini-hub proxy" 200
+	}
+}
