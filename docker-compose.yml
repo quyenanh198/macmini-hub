@@ -32,3 +32,44 @@ services:
     command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
     environment:
       TZ: ${TZ}
+
+  tts-studio:
+    image: ghcr.io/quyenanh198/tts-studio:latest
+    profiles: [apps]
+    restart: unless-stopped
+    mem_limit: 3g
+    environment:
+      TZ: ${TZ}
+      ENABLE_HEAVY_TTS: ${ENABLE_HEAVY_TTS}
+    volumes:
+      - ${DATA_ROOT}/tts-models:/models
+      - ${DATA_ROOT}/tts-output:/output
+
+  cadence2:
+    image: ghcr.io/quyenanh198/cadence2:latest
+    profiles: [apps]
+    restart: unless-stopped
+    mem_limit: 512m
+    environment:
+      TZ: ${TZ}
+
+  stock-site:
+    image: ghcr.io/quyenanh198/stock-site:latest
+    profiles: [apps]
+    restart: unless-stopped
+    mem_limit: 512m
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - ${DATA_ROOT}/stock-reports:/site/reports
+
+  chat:
+    image: ghcr.io/quyenanh198/chat:latest
+    profiles: [apps]
+    restart: unless-stopped
+    mem_limit: 768m
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - ${DATA_ROOT}/chat/db:/data/db
+      - ${DATA_ROOT}/chat/media:/data/media
