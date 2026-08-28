@@ -1,0 +1,28 @@
+- Apps:
+    - TTS Studio:
+        href: https://tts.EXAMPLE-DOMAIN/
+        description: TTS / ASR / voice clone (+ AudioExtract)
+        server: local
+        container: macmini-hub-tts-studio-1
+    - Cadence2:
+        href: https://cadence.EXAMPLE-DOMAIN/
+        description: Markdown TTS reader
+        server: local
+        container: macmini-hub-cadence2-1
+    - Stock Site:
+        href: https://stock.EXAMPLE-DOMAIN/
+        description: Stock analysis reports
+        server: local
+        container: macmini-hub-stock-site-1
+    - Chat:
+        href: https://chat.EXAMPLE-DOMAIN/
+        description: Family chat PWA
+        server: local
+        container: macmini-hub-chat-1
+
+- Ops:
+    - Dozzle:
+        href: http://SET-LAN-IP:8081/
+        description: Container logs
+        server: local
+        container: macmini-hub-dozzle-1
