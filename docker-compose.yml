@@ -24,14 +24,20 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
       - "8081:8080"
+    healthcheck:
+      test: ["CMD", "/dozzle", "healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   cloudflared:
     image: cloudflare/cloudflared:latest
     restart: unless-stopped
     mem_limit: 256m
-    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    command: tunnel --no-autoupdate run
     environment:
       TZ: ${TZ}
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
 
   tts-studio:
     image: ghcr.io/quyenanh198/tts-studio:latest
@@ -42,8 +48,8 @@ services:
       TZ: ${TZ}
       ENABLE_HEAVY_TTS: ${ENABLE_HEAVY_TTS}
     volumes:
-      - ${DATA_ROOT}/tts-models:/models
-      - ${DATA_ROOT}/tts-output:/output
+      - ${DATA_ROOT:?DATA_ROOT must be set}/tts-models:/models
+      - ${DATA_ROOT:?DATA_ROOT must be set}/tts-output:/output
 
   cadence2:
     image: ghcr.io/quyenanh198/cadence2:latest
@@ -61,7 +67,7 @@ services:
     environment:
       TZ: ${TZ}
     volumes:
-      - ${DATA_ROOT}/stock-reports:/site/reports
+      - ${DATA_ROOT:?DATA_ROOT must be set}/stock-reports:/site/reports
 
   chat:
     image: ghcr.io/quyenanh198/chat:latest
@@ -71,5 +77,5 @@ services:
     environment:
       TZ: ${TZ}
     volumes:
-      - ${DATA_ROOT}/chat/db:/data/db
-      - ${DATA_ROOT}/chat/media:/data/media
+      - ${DATA_ROOT:?DATA_ROOT must be set}/chat/db:/data/db
+      - ${DATA_ROOT:?DATA_ROOT must be set}/chat/media:/data/media
