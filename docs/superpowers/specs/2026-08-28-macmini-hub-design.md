@@ -47,7 +47,7 @@ Kiến trúc app đã duyệt trước đó giữ nguyên, chỉ đổi host lay
 
 ## Kiểm chứng thành công
 
-- `docker compose ps` mọi service healthy sau reboot nguội (rút điện cắm lại).
+- `docker compose ps` mọi service Up (healthy với service có healthcheck) sau reboot nguội (rút điện cắm lại).
 - Truy cập được các subdomain qua Cloudflare Tunnel từ ngoài mạng.
 - Dữ liệu volume nằm trên ổ ngoài (kiểm tra path), ổ trong không phình.
 - Image chạy đúng arm64 (không qua emulation).

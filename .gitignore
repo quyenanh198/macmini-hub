@@ -1,3 +1,9 @@
 .env
 *.log
 .DS_Store
+
+# Homepage writes these into config/homepage at runtime
+config/homepage/custom.css
+config/homepage/custom.js
+config/homepage/kubernetes.yaml
+config/homepage/logs/

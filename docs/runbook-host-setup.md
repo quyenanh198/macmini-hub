@@ -23,14 +23,15 @@ Mỗi bước có lệnh verify. Làm tuần tự.
 - Verify: `ls /Volumes/hubdata` thấy 4 mục.
 
 ## 4. OrbStack
-- Cài: `brew install orbstack` (hoặc tải https://orbstack.dev).
+- Cài: `brew install --cask orbstack` (hoặc tải https://orbstack.dev).
 - Mở OrbStack lần đầu → Settings → **Start at login** ON.
 - Verify: `docker version` và `docker compose version` chạy được.
 
 ## 5. Clone hub repo
     cd ~ && git clone --recurse-submodules https://github.com/quyenanh198/macmini-hub.git
     cd macmini-hub && cp .env.example .env
-- Điền `.env`: `CLOUDFLARE_TUNNEL_TOKEN` (bước 6), `DATA_ROOT=/Volumes/hubdata`.
+- Điền `.env`: `CLOUDFLARE_TUNNEL_TOKEN` (bước 6), `DATA_ROOT=/Volumes/hubdata`, `TZ` (timezone của operator, ví dụ `Asia/Ho_Chi_Minh` nếu ở VN).
+- Giữ `ENABLE_HEAVY_TTS=false` cho tới khi kiểm chứng RAM máy chịu được tải Whisper/Seed-VC, mới bật `true`.
 - Submodule thêm dần khi từng app sẵn sàng: `git submodule add https://github.com/quyenanh198/<app>.git apps/<app>`
 - Verify: `docker compose config -q` không lỗi.
 
@@ -48,6 +49,7 @@ Mỗi bước có lệnh verify. Làm tuần tự.
     ./scripts/install-launchagent.sh
     launchctl kickstart gui/$(id -u)/com.macmini-hub.startup
 - Verify: `docker compose ps` mọi service Up; log tại `~/Library/Logs/macmini-hub-startup.log`.
+- Lưu ý: script khởi động không tự `pull` image apps (tránh boot fail khi image chưa tồn tại). Khi cần cập nhật image apps, chạy tay lúc bảo trì: `docker compose --profile apps pull && docker compose --profile apps up -d`.
 
 ## 8. Nghiệm thu cuối — cold reboot test
 - Rút điện Mac Mini 10 giây, cắm lại. KHÔNG đụng bàn phím.
@@ -55,4 +57,5 @@ Mỗi bước có lệnh verify. Làm tuần tự.
   - `ssh` vào được
   - `docker compose ps` → mọi service Up
   - Mở subdomain qua 4G (ngoài LAN) → load được
-- Đạt cả 3 = xong setup host.
+- Kiểm tra arch chạy đúng native, không qua emulation: `docker image inspect ghcr.io/gethomepage/homepage:latest --format '{{.Architecture}}'` phải ra `arm64`.
+- Đạt cả 4 = xong setup host.
