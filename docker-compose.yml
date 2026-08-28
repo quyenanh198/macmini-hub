@@ -1,0 +1,34 @@
+name: macmini-hub
+
+services:
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest  # pin version khi deploy thật chạy ổn
+    restart: unless-stopped
+    mem_limit: 512m
+    environment:
+      TZ: ${TZ}
+      HOMEPAGE_ALLOWED_HOSTS: "*"
+    volumes:
+      - ./config/homepage:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "3000:3000"
+
+  dozzle:
+    image: amir20/dozzle:latest
+    restart: unless-stopped
+    mem_limit: 256m
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "8081:8080"
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    mem_limit: 256m
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    environment:
+      TZ: ${TZ}
