@@ -588,3 +588,23 @@ Expected: `CLEAN`
 git add docs/runbook-host-setup.md
 git commit -m "docs: mac mini host setup runbook"
 ```
+
+---
+
+## Amendments (final review)
+
+Final review found issues in the plan bodies above (task text left as-is for history). Actual implementation was corrected as follows:
+
+- `scripts/startup.sh`: removed `docker compose --profile apps pull` from the boot path (app images may not exist yet, pull would fail with `set -euo pipefail` and abort before core even starts); now runs `docker compose up -d` (core) unconditionally, then `docker compose --profile apps up -d || echo "apps profile failed (images may not exist yet), core is up"`.
+- `scripts/startup.sh`: added preflight checks before compose — abort with a clear message if `.env` is missing, and abort if `DATA_ROOT` (parsed from `.env` via `grep`/`cut`, not sourced) is not an existing directory (external drive not mounted).
+- `docker-compose.yml` cloudflared: moved the tunnel token out of `command:` into `environment: TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}`; `command` is now `tunnel --no-autoupdate run`.
+- `docker-compose.yml`: all 5 `${DATA_ROOT}` bind-mount sources changed to `${DATA_ROOT:?DATA_ROOT must be set}` to fail fast instead of silently binding to `/`.
+- `docker-compose.yml` dozzle: added a healthcheck (`["CMD", "/dozzle", "healthcheck"]`, interval 30s, timeout 5s, retries 3); other images have no reliable in-image probe and were left without one.
+- `.github/workflows/build-images.yml`: trigger branches changed from `[main]` to `[main, master]` (repo default branch is `master`).
+- `.github/workflows/build-images.yml`: `platforms` changed from `linux/arm64,linux/amd64` to `linux/arm64` only, and the `docker/setup-qemu-action@v3` step was removed (not needed without emulation).
+- `scripts/com.macmini-hub.startup.plist.template`: added a `KeepAlive` dict (`SuccessfulExit` false) with `ThrottleInterval` 60, plus `StandardOutPath`/`StandardErrorPath` pointing at `__HOME__/Library/Logs/macmini-hub-launchd.log`; `RunAtLoad` kept true.
+- `docs/runbook-host-setup.md`: `brew install orbstack` corrected to `brew install --cask orbstack`.
+- `docs/runbook-host-setup.md` section 5: added guidance to also set `TZ` and to leave `ENABLE_HEAVY_TTS=false` until RAM is verified.
+- `docs/runbook-host-setup.md` section 7: added a note that images are no longer pulled at boot, with the manual maintenance command `docker compose --profile apps pull && docker compose --profile apps up -d`.
+- `docs/runbook-host-setup.md` section 8: added an arch-check acceptance line (`docker image inspect ... --format '{{.Architecture}}'` must print `arm64`).
+- `docs/superpowers/specs/2026-08-28-macmini-hub-design.md`: success criterion wording changed from "mọi service healthy" to "mọi service Up (healthy với service có healthcheck)" to match that most images have no healthcheck.
