@@ -11,6 +11,17 @@
   </array>
   <key>RunAtLoad</key>
   <true/>
+  <key>KeepAlive</key>
+  <dict>
+    <key>SuccessfulExit</key>
+    <false/>
+  </dict>
+  <key>ThrottleInterval</key>
+  <integer>60</integer>
+  <key>StandardOutPath</key>
+  <string>__HOME__/Library/Logs/macmini-hub-launchd.log</string>
+  <key>StandardErrorPath</key>
+  <string>__HOME__/Library/Logs/macmini-hub-launchd.log</string>
   <key>EnvironmentVariables</key>
   <dict>
     <key>PATH</key>

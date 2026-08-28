@@ -17,6 +17,12 @@ done
 docker info >/dev/null 2>&1 || { echo "docker not ready after 300s, abort"; exit 1; }
 
 cd "$REPO_DIR"
-docker compose --profile apps pull
-docker compose --profile apps up -d
+
+[ -f .env ] || { echo ".env not found in $REPO_DIR, abort"; exit 1; }
+DATA_ROOT="$(grep '^DATA_ROOT=' .env | cut -d= -f2-)"
+[ -n "$DATA_ROOT" ] || { echo "DATA_ROOT not set in .env, abort"; exit 1; }
+[ -d "$DATA_ROOT" ] || { echo "DATA_ROOT ($DATA_ROOT) is not a directory — external drive not mounted? abort"; exit 1; }
+
+docker compose up -d
+docker compose --profile apps up -d || echo "apps profile failed (images may not exist yet), core is up"
 echo "=== $(date) done ==="
