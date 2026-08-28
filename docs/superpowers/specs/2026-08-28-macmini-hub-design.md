@@ -57,3 +57,9 @@ Kiến trúc app đã duyệt trước đó giữ nguyên, chỉ đổi host lay
 - Viết code từng app (đã/sẽ có plan riêng theo workflow multi-agent).
 - Chọn domain.
 - Migration dữ liệu từ QNAP (stack chưa từng deploy thật trên QNAP — không có gì để migrate; nếu có dữ liệu thử nghiệm, copy tay một lần).
+
+## Bổ sung 2026-08-28: on-demand apps
+
+- Chat chạy 24/7 (core). tts-studio/cadence2/stock-site mặc định tắt, sablier + Caddy tự start khi có request, idle 15 phút tự stop.
+- cloudflared trỏ mọi subdomain app về caddy:80; Caddy custom build (sablier-caddy-plugin) route theo Host.
+- Phân quyền user: Cloudflare Access email allowlist per subdomain; chat bypass (app tự auth).

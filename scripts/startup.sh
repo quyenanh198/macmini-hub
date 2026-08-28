@@ -24,5 +24,5 @@ DATA_ROOT="$(grep '^DATA_ROOT=' .env | cut -d= -f2-)"
 [ -d "$DATA_ROOT" ] || { echo "DATA_ROOT ($DATA_ROOT) is not a directory — external drive not mounted? abort"; exit 1; }
 
 docker compose up -d
-docker compose --profile apps up -d || echo "apps profile failed (images may not exist yet), core is up"
+docker compose --profile apps create || echo "apps create failed (images may not exist yet), core is up"
 echo "=== $(date) done ==="

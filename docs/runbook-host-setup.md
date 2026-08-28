@@ -37,12 +37,14 @@ Mỗi bước có lệnh verify. Làm tuần tự.
 
 ## 6. Cloudflare Tunnel
 - Zero Trust dashboard → Networks → Tunnels → Create tunnel → copy **token** vào `.env`.
-- Khi chốt domain: thêm public hostname per subdomain, service trỏ `http://homepage:3000`, `http://tts-studio:8000`, `http://cadence2:3000`, `http://stock-site:8080`, `http://chat:8082`.
-- Cloudflare Access: policy login cho mọi subdomain TRỪ chat (chat tự quản auth).
-- Chốt domain xong, thay giá trị chờ:
+- Khi chốt domain: thêm public hostname per subdomain. Dashboard `homepage` trỏ `http://homepage:3000` như cũ. Bốn subdomain app (`tts`, `cadence`, `stock`, `chat`) đều trỏ **cùng một service** `http://caddy:80` — Caddy tự route tiếp theo Host header vào đúng app (xem `config/caddy/Caddyfile`), không khai riêng port từng app nữa.
+- Cloudflare Access: subdomain `chat` = **Bypass** (app tự quản auth + invite code). Ba subdomain còn lại (`tts`, `cadence`, `stock`) mỗi cái một policy riêng kiểu **email allowlist** — mặc định chỉ có email của Ken; muốn cho ai dùng app nào thì thêm email người đó vào policy của đúng subdomain đó.
+- Chốt domain xong, thay giá trị chờ (lệnh sed giờ chạy trên cả Caddyfile lẫn homepage config):
 
-      sed -i '' 's/EXAMPLE-DOMAIN/ten-domain-that/g; s/SET-LAN-IP/ip-lan-mac-mini/g' config/homepage/services.yaml
+      sed -i '' 's/EXAMPLE-DOMAIN/ten-domain-that/g' config/caddy/Caddyfile config/homepage/services.yaml
+      sed -i '' 's/SET-LAN-IP/ip-lan-mac-mini/g' config/homepage/services.yaml
 
+- Ghi chú on-demand: `tts`, `cadence`, `stock` mặc định ở trạng thái stopped, Sablier tự start container khi có request đầu tiên — lần đầu mở subdomain sẽ thấy **trang chờ** vài giây (`tts` có thể lâu hơn vì container nặng), rồi tự chuyển vào app. Idle 15 phút không có request thì container tự dừng lại để tiết kiệm RAM. `chat` không qua Sablier, luôn chạy 24/7.
 - Verify: `docker compose up -d` → tunnel status **HEALTHY** trên dashboard.
 
 ## 7. Auto-start
