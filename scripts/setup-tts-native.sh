@@ -18,6 +18,16 @@ uv pip install --python "$VENV/bin/python" -r "$TTS_REPO/requirements.txt"
 # container lấy ffmpeg qua apt; native không có apt nên dùng binary đóng gói sẵn của imageio-ffmpeg (fallback trong ffmpeg.py)
 uv pip install --python "$VENV/bin/python" imageio-ffmpeg
 
+# ffmpeg + ffprobe thật (static arm64, ffmpeg 7.0) vào thư mục bundled-binary của app —
+# thắng fallback imageio trong ffmpeg.py và có cả ffprobe (imageio không kèm).
+uv pip install --python "$VENV/bin/python" static-ffmpeg
+if [ ! -x "$DATA/bin/ffmpeg/ffprobe" ]; then
+  FF=$("$VENV/bin/python" -c 'import static_ffmpeg.run as r; print(" ".join(r.get_or_fetch_platform_executables_else_raise()))')
+  mkdir -p "$DATA/bin/ffmpeg"
+  cp $FF "$DATA/bin/ffmpeg/"
+  chmod +x "$DATA/bin/ffmpeg/ffmpeg" "$DATA/bin/ffmpeg/ffprobe"
+fi
+
 # Build SPA once (native uvicorn serves frontend/dist); host has no node — use docker.
 if [ ! -f "$TTS_REPO/frontend/dist/index.html" ]; then
   docker run --rm -v "$TTS_REPO/frontend":/f -w /f node:22-slim sh -c 'npm ci && npm run build'
