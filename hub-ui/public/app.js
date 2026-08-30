@@ -136,13 +136,43 @@ function serviceCard(svc, info) {
     : `<div class="card">${inner}</div>`;
 }
 
+let lastContainers = {};
+let currentView = 'top';
+
+// Home shows only what is awake; the Apps/Ops views list everything.
 function renderServices(containers) {
-  el('apps-grid').innerHTML = CONFIG.apps.map((s) => serviceCard(s, containers[s.container])).join('');
-  el('ops-grid').innerHTML = CONFIG.ops.map((s) => serviceCard(s, containers[s.container])).join('');
+  lastContainers = containers;
+  const onlineOnly = currentView === 'top';
+  const filter = (list) =>
+    onlineOnly ? list.filter((s) => containers[s.container]?.state === 'running') : list;
+
+  const apps = filter(CONFIG.apps);
+  const ops = filter(CONFIG.ops);
+  el('apps-grid').innerHTML = apps.length
+    ? apps.map((s) => serviceCard(s, containers[s.container])).join('')
+    : '<p class="grid-empty">All apps are asleep — open one via its link to wake it.</p>';
+  el('ops-grid').innerHTML = ops.length
+    ? ops.map((s) => serviceCard(s, containers[s.container])).join('')
+    : '<p class="grid-empty">Nothing running.</p>';
 
   const coreOk = CONFIG.ops.every((s) => containers[s.container]?.state === 'running')
     && containers[CONFIG.apps.find((a) => a.name === 'Chat')?.container]?.state === 'running';
   el('health').innerHTML = `<span class="dot ${coreOk ? 'dot--green' : 'dot--amber'}"></span><span>${coreOk ? 'Healthy' : 'Degraded'}</span>`;
+}
+
+const VIEW_SECTIONS = {
+  top: ['stats-row', 'apps', 'ops', 'dev'],
+  apps: ['apps'],
+  ops: ['ops'],
+  dev: ['dev'],
+};
+
+function applyView(view) {
+  currentView = view;
+  for (const id of ['stats-row', 'apps', 'ops', 'dev']) {
+    el(id).style.display = VIEW_SECTIONS[view].includes(id) ? '' : 'none';
+  }
+  renderServices(lastContainers);
 }
 
 function renderDev() {
@@ -191,7 +221,7 @@ async function boot() {
   document.querySelectorAll('[data-icon]').forEach((n) => { n.innerHTML = ICONS[n.dataset.icon] || ''; });
 
   let theme = 'light';
-  try { theme = localStorage.getItem('hub.theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); } catch {}
+  try { theme = localStorage.getItem('hub.theme') || 'light'; } catch {}
   applyTheme(theme);
 
   el('theme-btn').addEventListener('click', () => {
@@ -200,10 +230,13 @@ async function boot() {
 
   el('hamburger').addEventListener('click', () => el('sidebar').classList.toggle('sidebar--open'));
   document.querySelectorAll('.nav-item[data-nav]').forEach((a) => {
-    a.addEventListener('click', () => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
       document.querySelectorAll('.nav-item[data-nav]').forEach((n) => n.classList.remove('nav-item--active'));
       a.classList.add('nav-item--active');
       el('sidebar').classList.remove('sidebar--open');
+      applyView(a.dataset.nav);
+      window.scrollTo({ top: 0 });
     });
   });
 

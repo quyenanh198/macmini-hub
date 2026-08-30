@@ -301,6 +301,17 @@ a.card:hover { transform: translateY(-2px); border-color: var(--accent); }
 .card-offline b { display: block; font-size: 0.82rem; font-weight: 700; }
 .card-offline span { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.04em; }
 
+.grid-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  background: var(--card);
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  padding: 1rem;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
 /* ---------- dev list ---------- */
 
 .dev-list {
