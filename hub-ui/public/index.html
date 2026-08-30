@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lazybutts Hub</title>
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2300c6ff'/%3E%3Cstop offset='1' stop-color='%230072ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3Ctext x='16' y='22' font-family='Arial' font-size='14' font-weight='bold' fill='white' text-anchor='middle'%3ELB%3C/text%3E%3C/svg%3E" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand">
+          <span class="brand-mark">LB</span>
+          <span class="brand-name">Lazybutts Hub</span>
+        </div>
+        <nav class="nav">
+          <a href="#top" class="nav-item nav-item--active" data-nav="top"><span class="nav-icon" data-icon="home"></span>Home</a>
+          <a href="#apps" class="nav-item" data-nav="apps"><span class="nav-icon" data-icon="apps"></span>Apps</a>
+          <a href="#ops" class="nav-item" data-nav="ops"><span class="nav-icon" data-icon="ops"></span>Ops</a>
+          <a href="#dev" class="nav-item" data-nav="dev"><span class="nav-icon" data-icon="dev"></span>Dev</a>
+        </nav>
+        <div class="sidebar-footer">
+          <button type="button" class="nav-item" id="settings-btn"><span class="nav-icon" data-icon="gear"></span>Settings</button>
+          <button type="button" class="nav-item" id="theme-btn"><span class="nav-icon" data-icon="moon"></span><span id="theme-label">Light</span></button>
+        </div>
+      </aside>
+
+      <main class="main" id="top">
+        <header class="topbar">
+          <button type="button" class="hamburger" id="hamburger" aria-label="Menu">☰</button>
+          <div class="topbar-brand">
+            <span class="brand-mark">LB</span>
+            <span class="brand-name">Lazybutts Hub</span>
+          </div>
+          <div class="topbar-right">
+            <span class="health" id="health"><span class="dot dot--green"></span><span id="health-label">Healthy</span></span>
+            <span class="topbar-date" id="date-label"></span>
+            <span class="topbar-sep">·</span>
+            <span class="topbar-time" id="time-label"></span>
+            <span class="host-chip" id="host-chip"></span>
+          </div>
+        </header>
+
+        <section class="stats-row" id="stats-row"></section>
+
+        <section class="section" id="apps">
+          <h2 class="section-title"><span class="section-icon" data-icon="apps"></span>Apps</h2>
+          <div class="card-grid" id="apps-grid"></div>
+        </section>
+
+        <section class="section" id="ops">
+          <h2 class="section-title"><span class="section-icon" data-icon="ops"></span>Ops</h2>
+          <div class="card-grid" id="ops-grid"></div>
+        </section>
+
+        <section class="section" id="dev">
+          <h2 class="section-title"><span class="section-icon" data-icon="dev"></span>Dev</h2>
+          <div class="dev-list" id="dev-list"></div>
+        </section>
+      </main>
+    </div>
+
+    <div class="modal-overlay" id="settings-modal" hidden>
+      <div class="modal">
+        <h3>Settings</h3>
+        <p class="modal-note">Services are defined in <code>hub-ui/config.json</code> in the macmini-hub repo. Edit + <code>docker compose up -d --build hub-ui</code>.</p>
+        <pre id="config-dump"></pre>
+        <button type="button" class="btn" id="settings-close">Close</button>
+      </div>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

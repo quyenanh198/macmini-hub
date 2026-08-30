@@ -1,0 +1,89 @@
+{
+  "title": "Lazybutts Hub",
+  "host": "Mac mini",
+  "apps": [
+    {
+      "name": "TTS Studio",
+      "desc": "TTS / ASR / voice clone (+ AudioExtract)",
+      "href": "https://tts.lazybutts.com/",
+      "container": "macmini-hub-tts-studio-1",
+      "icon": "waveform",
+      "tint": "blue"
+    },
+    {
+      "name": "Cadence2",
+      "desc": "Markdown TTS reader",
+      "href": "https://cadence.lazybutts.com/",
+      "container": "macmini-hub-cadence2-1",
+      "icon": "book",
+      "tint": "green"
+    },
+    {
+      "name": "Stock Site",
+      "desc": "Stock analysis reports",
+      "href": "https://stock.lazybutts.com/",
+      "container": "macmini-hub-stock-site-1",
+      "icon": "chart",
+      "tint": "teal"
+    },
+    {
+      "name": "Chat",
+      "desc": "Family chat PWA",
+      "href": "https://chat.lazybutts.com/",
+      "container": "macmini-hub-chat-1",
+      "icon": "chat",
+      "tint": "sky"
+    }
+  ],
+  "ops": [
+    {
+      "name": "Dozzle",
+      "desc": "Container logs (LAN only)",
+      "href": "http://192.168.0.120:8081/",
+      "container": "macmini-hub-dozzle-1",
+      "icon": "logs",
+      "tint": "teal"
+    },
+    {
+      "name": "Caddy",
+      "desc": "Host router + sablier wake",
+      "container": "macmini-hub-caddy-1",
+      "icon": "fork",
+      "tint": "green"
+    },
+    {
+      "name": "Cloudflared",
+      "desc": "Tunnel to lazybutts.com",
+      "container": "macmini-hub-cloudflared-1",
+      "icon": "cloud",
+      "tint": "sky"
+    },
+    {
+      "name": "Sablier",
+      "desc": "Scale-to-zero for idle apps",
+      "container": "macmini-hub-sablier-1",
+      "icon": "sleep",
+      "tint": "slate"
+    }
+  ],
+  "dev": [
+    {
+      "name": "macmini-hub repo",
+      "href": "https://github.com/quyenanh198/macmini-hub",
+      "domain": "github.com",
+      "icon": "github"
+    },
+    {
+      "name": "GHCR images",
+      "href": "https://github.com/quyenanh198?tab=packages",
+      "domain": "github.com",
+      "icon": "package"
+    },
+    {
+      "name": "Cloudflare One",
+      "href": "https://one.dash.cloudflare.com/",
+      "domain": "one.dash.cloudflare.com",
+      "icon": "cloud"
+    }
+  ]
+}

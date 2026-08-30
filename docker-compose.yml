@@ -1,18 +1,17 @@
 name: macmini-hub
 
 services:
-  homepage:
-    image: ghcr.io/gethomepage/homepage:latest  # pin version khi deploy thật chạy ổn
+  hub-ui:
+    build: ./hub-ui
+    image: macmini-hub/hub-ui:local
     restart: unless-stopped
-    mem_limit: 512m
+    mem_limit: 256m
     environment:
       TZ: ${TZ}
-      HOMEPAGE_ALLOWED_HOSTS: "*"
     volumes:
-      - ./config/homepage:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
-      - "3000:3000"
+      - "3000:8090"
 
   dozzle:
     image: amir20/dozzle:latest
