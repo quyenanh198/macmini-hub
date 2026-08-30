@@ -61,3 +61,6 @@ Mỗi bước có lệnh verify. Làm tuần tự.
   - Mở subdomain qua 4G (ngoài LAN) → load được
 - Kiểm tra arch chạy đúng native, không qua emulation: `docker image inspect ghcr.io/gethomepage/homepage:latest --format '{{.Architecture}}'` phải ra `arm64`.
 - Đạt cả 4 = xong setup host.
+
+> Lưu ý native: sau khi bấm "Cài đặt" engine (Seed-VC/F5/GPU wheels) trong app, restart service để nạp module mới:
+> `launchctl kickstart -k gui/$(id -u)/com.lazybutts.tts-native`
