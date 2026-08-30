@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>com.lazybutts.tts-native</string>
+  <key>ProgramArguments</key><array>
+    <string>__VENV__/bin/uvicorn</string>
+    <string>app.main:app</string>
+    <string>--app-dir</string><string>__REPO__/backend</string>
+    <string>--host</string><string>0.0.0.0</string>
+    <string>--port</string><string>8600</string>
+  </array>
+  <key>EnvironmentVariables</key><dict>
+    <key>TTS_STUDIO_DATA</key><string>/Volumes/hubdata/TTSStudio</string>
+    <key>TTS_STUDIO_ALLOWED_HOSTS</key><string>*</string>
+  </dict>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>StandardOutPath</key><string>__HOME__/Library/Logs/tts-native.log</string>
+  <key>StandardErrorPath</key><string>__HOME__/Library/Logs/tts-native.log</string>
+</dict></plist>
