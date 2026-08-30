@@ -104,6 +104,7 @@ services:
     environment:
       TZ: ${TZ}
       SESSION_SECRET: ${CHAT_SESSION_SECRET:?CHAT_SESSION_SECRET must be set}
+      BOOTSTRAP_INVITE: ${CHAT_BOOTSTRAP_INVITE:-}
     volumes:
       - ${DATA_ROOT:?DATA_ROOT must be set}/chat/db:/data/db
       - ${DATA_ROOT:?DATA_ROOT must be set}/chat/media:/data/media
