@@ -103,6 +103,7 @@ services:
     mem_limit: 768m
     environment:
       TZ: ${TZ}
+      SESSION_SECRET: ${CHAT_SESSION_SECRET:?CHAT_SESSION_SECRET must be set}
     volumes:
       - ${DATA_ROOT:?DATA_ROOT must be set}/chat/db:/data/db
       - ${DATA_ROOT:?DATA_ROOT must be set}/chat/media:/data/media
