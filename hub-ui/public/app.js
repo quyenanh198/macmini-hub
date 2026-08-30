@@ -157,18 +157,18 @@ function renderServices(containers) {
   lastContainers = containers;
   const onlineOnly = currentView === 'top' && !settings.showOffline;
   const filter = (list) =>
-    onlineOnly ? list.filter((s) => containers[s.container]?.state === 'running') : list;
+    onlineOnly ? list.filter((s) => containers[s.container || s.name]?.state === 'running') : list;
 
   const apps = filter(CONFIG.apps);
   const ops = filter(CONFIG.ops);
   el('apps-grid').innerHTML = apps.length
-    ? apps.map((s) => serviceCard(s, containers[s.container])).join('')
+    ? apps.map((s) => serviceCard(s, containers[s.container || s.name])).join('')
     : '<p class="grid-empty">All apps are asleep — open one via its link to wake it.</p>';
   el('ops-grid').innerHTML = ops.length
-    ? ops.map((s) => serviceCard(s, containers[s.container])).join('')
+    ? ops.map((s) => serviceCard(s, containers[s.container || s.name])).join('')
     : '<p class="grid-empty">Nothing running.</p>';
 
-  const coreOk = CONFIG.ops.every((s) => containers[s.container]?.state === 'running')
+  const coreOk = CONFIG.ops.every((s) => containers[s.container || s.name]?.state === 'running')
     && containers[CONFIG.apps.find((a) => a.name === 'Chat')?.container]?.state === 'running';
   el('health').innerHTML = `<span class="dot ${coreOk ? 'dot--green' : 'dot--amber'}"></span><span>${coreOk ? 'Healthy' : 'Degraded'}</span>`;
 }
@@ -216,7 +216,7 @@ function renderClock() {
 
 function renderHeroSub(containers) {
   const total = CONFIG.apps.length;
-  const awake = CONFIG.apps.filter((s) => containers[s.container]?.state === 'running').length;
+  const awake = CONFIG.apps.filter((s) => containers[s.container || s.name]?.state === 'running').length;
   el('hero-sub').textContent =
     awake === total
       ? 'Your Mac mini is wide awake. Everything is within reach.'

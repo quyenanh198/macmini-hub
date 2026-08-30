@@ -182,6 +182,23 @@ async function containerInfo() {
       out[name] = entry;
     }),
   );
+
+  await Promise.all(
+    [...CONFIG.apps, ...CONFIG.ops]
+      .filter((s) => !s.container && s.health)
+      .map(async (s) => {
+        try {
+          const ctl = new AbortController();
+          const t = setTimeout(() => ctl.abort(), 3000);
+          const r = await fetch(s.health, { signal: ctl.signal });
+          clearTimeout(t);
+          out[s.name] = { state: r.ok ? 'running' : 'exited' };
+        } catch {
+          out[s.name] = { state: 'exited' };
+        }
+      }),
+  );
+
   return out;
 }
 
