@@ -3,12 +3,12 @@
 }
 
 :80 {
-	@chat host chat.EXAMPLE-DOMAIN
+	@chat host chat.lazybutts.com
 	handle @chat {
 		reverse_proxy chat:8082
 	}
 
-	@tts host tts.EXAMPLE-DOMAIN
+	@tts host tts.lazybutts.com
 	route @tts {
 		sablier http://sablier:10000 {
 			group tts
@@ -18,7 +18,7 @@
 		reverse_proxy tts-studio:8000
 	}
 
-	@cadence host cadence.EXAMPLE-DOMAIN
+	@cadence host cadence.lazybutts.com
 	route @cadence {
 		sablier http://sablier:10000 {
 			group cadence
@@ -28,7 +28,7 @@
 		reverse_proxy cadence2:3000
 	}
 
-	@stock host stock.EXAMPLE-DOMAIN
+	@stock host stock.lazybutts.com
 	route @stock {
 		sablier http://sablier:10000 {
 			group stock
