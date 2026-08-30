@@ -1,0 +1,12 @@
+[submodule "apps/chat"]
+	path = apps/chat
+	url = https://github.com/quyenanh198/Chat.git
+[submodule "apps/cadence2"]
+	path = apps/cadence2
+	url = https://github.com/quyenanh198/Cadence2.git
+[submodule "apps/tts-studio"]
+	path = apps/tts-studio
+	url = https://github.com/quyenanh198/TTS-Studio.git
+[submodule "apps/stock-site"]
+	path = apps/stock-site
+	url = https://github.com/quyenanh198/quyenanh198.github.io.git
