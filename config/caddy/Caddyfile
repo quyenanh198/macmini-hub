@@ -21,14 +21,7 @@
 
 	@tts host tts.lazybutts.com
 	handle @tts {
-		route {
-			sablier http://sablier:10000 {
-				group tts
-				session_duration 15m
-				dynamic
-			}
-			reverse_proxy tts-studio:8000
-		}
+		reverse_proxy host.docker.internal:8600
 	}
 
 	@cadence host cadence.lazybutts.com

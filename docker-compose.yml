@@ -59,7 +59,7 @@ services:
 
   tts-studio:
     image: ghcr.io/quyenanh198/tts-studio:latest
-    profiles: [apps]
+    profiles: [fallback]   # native M4 là chính; container chỉ dùng khi cần fallback CPU
     restart: unless-stopped
     mem_limit: 3g
     labels:
