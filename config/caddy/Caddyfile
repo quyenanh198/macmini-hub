@@ -3,6 +3,11 @@
 }
 
 :80 {
+	@home host lazybutts.com
+	handle @home {
+		reverse_proxy homepage:3000
+	}
+
 	@chat host chat.lazybutts.com
 	handle @chat {
 		reverse_proxy chat:8082
