@@ -1,8 +1,18 @@
+- greeting:
+    text_size: xl
+    text: Mac Mini Hub
+
 - resources:
+    label: Mac Mini
     cpu: true
     memory: true
     disk: /
+    uptime: true
+    expanded: true
+
 - datetime:
+    text_size: xl
     format:
       timeStyle: short
       dateStyle: medium
+      hour12: false

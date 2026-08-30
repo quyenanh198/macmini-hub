@@ -1,3 +1,25 @@
 title: Mac Mini Hub
+description: Home services on the Mac Mini
 theme: dark
-headerStyle: clean
+color: slate
+headerStyle: boxed
+statusStyle: dot
+cardBlur: sm
+useEqualHeights: true
+hideVersion: true
+disableCollapse: true
+
+quicklaunch:
+  searchDescriptions: true
+  hideInternetSearch: true
+  hideVisitURL: true
+
+layout:
+  Apps:
+    style: row
+    columns: 4
+    icon: mdi-apps
+  Ops:
+    style: row
+    columns: 4
+    icon: mdi-console

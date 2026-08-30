@@ -1,28 +1,53 @@
 - Apps:
     - TTS Studio:
+        icon: mdi-microphone-message
         href: https://tts.lazybutts.com/
         description: TTS / ASR / voice clone (+ AudioExtract)
         server: local
         container: macmini-hub-tts-studio-1
+        showStats: true
     - Cadence2:
+        icon: mdi-book-music
         href: https://cadence.lazybutts.com/
         description: Markdown TTS reader
         server: local
         container: macmini-hub-cadence2-1
+        showStats: true
     - Stock Site:
+        icon: mdi-chart-line
         href: https://stock.lazybutts.com/
         description: Stock analysis reports
         server: local
         container: macmini-hub-stock-site-1
+        showStats: true
     - Chat:
+        icon: mdi-chat-processing
         href: https://chat.lazybutts.com/
         description: Family chat PWA
         server: local
         container: macmini-hub-chat-1
+        showStats: true
+        siteMonitor: http://chat:8082
 
 - Ops:
     - Dozzle:
+        icon: mdi-text-box-search
         href: http://192.168.0.120:8081/
-        description: Container logs
+        description: Container logs (LAN only)
         server: local
         container: macmini-hub-dozzle-1
+    - Caddy:
+        icon: mdi-directions-fork
+        description: Host router + sablier wake
+        server: local
+        container: macmini-hub-caddy-1
+    - Cloudflared:
+        icon: si-cloudflare
+        description: Tunnel to lazybutts.com
+        server: local
+        container: macmini-hub-cloudflared-1
+    - Sablier:
+        icon: mdi-sleep
+        description: Scale-to-zero for idle apps
+        server: local
+        container: macmini-hub-sablier-1

@@ -1,3 +1,10 @@
 - Dev:
-    - GitHub:
-        - href: https://github.com/quyenanh198
+    - macmini-hub repo:
+        - icon: si-github
+          href: https://github.com/quyenanh198/macmini-hub
+    - GHCR images:
+        - icon: si-github
+          href: https://github.com/quyenanh198?tab=packages
+    - Cloudflare One:
+        - icon: si-cloudflare
+          href: https://one.dash.cloudflare.com/
