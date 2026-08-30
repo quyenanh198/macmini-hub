@@ -18,6 +18,7 @@ const PORT = Number(process.env.PORT || 8090);
 const DOCKER_SOCK = process.env.DOCKER_SOCK || '/var/run/docker.sock';
 const HISTORY_LEN = 60;
 const SAMPLE_MS = 5000;
+const BOOT_VERSION = String(Date.now());
 
 // ---------- host stats sampling ----------
 
@@ -192,18 +193,18 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
   try {
     if (url.pathname === '/api/stats') {
-      res.writeHead(200, { 'content-type': 'application/json' });
+      res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
       res.end(JSON.stringify({ ...latest, history }));
       return;
     }
     if (url.pathname === '/api/containers') {
       const containers = await containerInfo();
-      res.writeHead(200, { 'content-type': 'application/json' });
+      res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
       res.end(JSON.stringify(containers));
       return;
     }
     if (url.pathname === '/api/config') {
-      res.writeHead(200, { 'content-type': 'application/json' });
+      res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
       res.end(JSON.stringify(CONFIG));
       return;
     }
@@ -215,8 +216,18 @@ const server = createServer(async (req, res) => {
       res.writeHead(403).end();
       return;
     }
-    const data = await fs.readFile(abs);
-    res.writeHead(200, { 'content-type': MIME[path.extname(abs)] || 'application/octet-stream' });
+    let data = await fs.readFile(abs);
+    const headers = { 'content-type': MIME[path.extname(abs)] || 'application/octet-stream' };
+    if (abs.endsWith('index.html')) {
+      // Per-deploy asset version so Cloudflare's edge cache can never serve a
+      // stale app.js/style.css: URLs change on every container start, and the
+      // HTML itself is never cached.
+      data = data.toString().replaceAll('__V__', BOOT_VERSION);
+      headers['cache-control'] = 'no-store';
+    } else {
+      headers['cache-control'] = 'public, max-age=31536000, immutable';
+    }
+    res.writeHead(200, headers);
     res.end(data);
   } catch (err) {
     if (err.code === 'ENOENT') {
