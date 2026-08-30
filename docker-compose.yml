@@ -67,7 +67,6 @@ services:
       - sablier.group=tts
     environment:
       TZ: ${TZ}
-      ENABLE_HEAVY_TTS: ${ENABLE_HEAVY_TTS}
     volumes:
       - ${DATA_ROOT:?DATA_ROOT must be set}/tts-models:/models
       - ${DATA_ROOT:?DATA_ROOT must be set}/tts-output:/output

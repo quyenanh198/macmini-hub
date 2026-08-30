@@ -384,6 +384,7 @@ git push origin master
 - [ ] **Step 3: Kiểm tra RAM native khi idle** (`ps aux | grep uvicorn`) — kỳ vọng < 500MB khi model chưa load.
 - [ ] **Step 4: Reboot nguội** — sau reboot: launchd kéo tts-native, LaunchAgent kéo stack, `https://tts.lazybutts.com` sống không thao tác tay.
 - [ ] **Step 5: Rollback drill** — đổi lại Caddyfile block cũ + `docker compose --profile fallback up -d tts-studio` → container phục vụ lại. Ghi chú thời gian thao tác.
+  - Lưu ý: rollback cũng phải revert mục TTS trong `hub-ui/config.json` (đổi `health` trỏ `host.docker.internal:8600` trở lại thành `container: macmini-hub-tts-studio-1`) rồi rebuild hub-ui — nếu bỏ bước này, dashboard vẫn healthcheck cổng native đã tắt và báo TTS offline dù container fallback đang chạy tốt.
 
 ## Kết quả nghiệm thu (Task 7)
 

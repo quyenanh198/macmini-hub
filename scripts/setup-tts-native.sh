@@ -15,6 +15,8 @@ uv venv --python 3.12 --clear "$VENV"
 # torch bản macOS arm64 có sẵn MPS; các dep còn lại theo requirements.txt
 uv pip install --python "$VENV/bin/python" torch torchaudio
 uv pip install --python "$VENV/bin/python" -r "$TTS_REPO/requirements.txt"
+# container lấy ffmpeg qua apt; native không có apt nên dùng binary đóng gói sẵn của imageio-ffmpeg (fallback trong ffmpeg.py)
+uv pip install --python "$VENV/bin/python" imageio-ffmpeg
 
 # Build SPA once (native uvicorn serves frontend/dist); host has no node — use docker.
 if [ ! -f "$TTS_REPO/frontend/dist/index.html" ]; then

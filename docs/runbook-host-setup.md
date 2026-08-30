@@ -31,7 +31,7 @@ Mỗi bước có lệnh verify. Làm tuần tự.
     cd ~ && git clone --recurse-submodules https://github.com/quyenanh198/macmini-hub.git
     cd macmini-hub && cp .env.example .env
 - Điền `.env`: `CLOUDFLARE_TUNNEL_TOKEN` (bước 6), `DATA_ROOT=/Volumes/hubdata`, `TZ` (timezone của operator, ví dụ `Asia/Ho_Chi_Minh` nếu ở VN).
-- Giữ `ENABLE_HEAVY_TTS=false` cho tới khi kiểm chứng RAM máy chịu được tải Whisper/Seed-VC, mới bật `true`.
+- TTS Studio chạy chính trên node native (launchd, Mac mini M4, port 8600) — container `tts-studio` (`profiles: [fallback]`) chỉ là dự phòng, chỉ phục vụ edge-tts nhẹ vì image không đóng gói sẵn Whisper/Seed-VC (deps nặng). Không có biến bật/tắt nào cho tầng nặng ở container fallback.
 - Submodule thêm dần khi từng app sẵn sàng: `git submodule add https://github.com/quyenanh198/<app>.git apps/<app>`
 - Verify: `docker compose config -q` không lỗi.
 
