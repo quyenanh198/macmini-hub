@@ -107,16 +107,20 @@ setInterval(sample, SAMPLE_MS);
 
 // ---------- docker ----------
 
-function dockerGet(apiPath) {
+function dockerCall(apiPath, method = 'GET', timeoutMs = 4000) {
   return new Promise((resolve, reject) => {
     const req = httpRequest(
-      { socketPath: DOCKER_SOCK, path: apiPath, method: 'GET' },
+      { socketPath: DOCKER_SOCK, path: apiPath, method },
       (res) => {
         let body = '';
         res.on('data', (c) => (body += c));
         res.on('end', () => {
           if (res.statusCode && res.statusCode >= 400) {
             reject(new Error(`docker ${apiPath} -> ${res.statusCode}`));
+            return;
+          }
+          if (!body) {
+            resolve(null);
             return;
           }
           try {
@@ -128,10 +132,12 @@ function dockerGet(apiPath) {
       },
     );
     req.on('error', reject);
-    req.setTimeout(4000, () => req.destroy(new Error('docker timeout')));
+    req.setTimeout(timeoutMs, () => req.destroy(new Error('docker timeout')));
     req.end();
   });
 }
+
+const dockerGet = (apiPath) => dockerCall(apiPath, 'GET');
 
 function containerCpuPct(stats) {
   const cpuDelta = stats.cpu_stats.cpu_usage.total_usage - stats.precpu_stats.cpu_usage.total_usage;
@@ -201,6 +207,20 @@ const server = createServer(async (req, res) => {
       const containers = await containerInfo();
       res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
       res.end(JSON.stringify(containers));
+      return;
+    }
+    if (url.pathname.startsWith('/api/restart/') && req.method === 'POST') {
+      const name = decodeURIComponent(url.pathname.slice('/api/restart/'.length));
+      // Only containers this dashboard manages — never arbitrary names.
+      const known = [...CONFIG.apps, ...CONFIG.ops].some((s) => s.container === name);
+      if (!known) {
+        res.writeHead(403, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ error: 'unknown_container' }));
+        return;
+      }
+      await dockerCall(`/v1.44/containers/${encodeURIComponent(name)}/restart?t=5`, 'POST', 30000);
+      res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
+      res.end(JSON.stringify({ ok: true }));
       return;
     }
     if (url.pathname === '/api/config') {

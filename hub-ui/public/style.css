@@ -170,6 +170,19 @@ body {
   box-shadow: var(--shadow);
 }
 
+/* ---------- hero ---------- */
+
+.hero { padding: 0.4rem 0.25rem 1.1rem; }
+.hero-date {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.hero-greeting { margin: 0.2rem 0 0.15rem; font-size: 1.7rem; font-weight: 800; letter-spacing: -0.02em; }
+.hero-sub { margin: 0; color: var(--text-muted); font-size: 0.92rem; }
+
 /* ---------- stat cards ---------- */
 
 .stats-row {
@@ -272,7 +285,30 @@ a.card:hover { transform: translateY(-2px); border-color: var(--accent); }
 .card-name { font-weight: 700; font-size: 0.98rem; }
 .card-desc { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem; line-height: 1.35; }
 
-.card-dot { position: absolute; top: 0.9rem; right: 0.9rem; }
+.card-dot { position: absolute; top: 1.15rem; right: 3.1rem; }
+
+.card-action {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  width: 1.9rem;
+  height: 1.9rem;
+  border: none;
+  border-radius: 50%;
+  background: var(--card-inset);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.card-action svg { width: 0.95rem; height: 0.95rem; }
+.card-action:hover { background: var(--tint-blue-bg); color: var(--accent); }
+.card-action:disabled { opacity: 0.6; cursor: default; }
+.card-action--busy svg { animation: spin 0.9s linear infinite; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .card-stats {
   display: grid;

@@ -23,6 +23,8 @@ const ICONS = {
   github: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.2-3.4-1.2-.4-1.1-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.4 1.1 3 .8.1-.7.4-1.1.6-1.4-2.2-.2-4.6-1.1-4.6-5a3.9 3.9 0 0 1 1-2.7 3.6 3.6 0 0 1 .1-2.7s.9-.3 2.8 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1a3.6 3.6 0 0 1 .1 2.7 3.9 3.9 0 0 1 1 2.7c0 3.9-2.3 4.7-4.6 5 .4.3.7.9.7 1.9v2.8c0 .3.2.6.7.5A10 10 0 0 0 12 2Z"/></svg>',
   package: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 8 4.5v11L12 22l-8-4.5v-11L12 2Z"/><path d="M12 22v-9.5"/><path d="m4 6.5 8 6 8-6"/></svg>',
   ext: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4 10 14"/><path d="M20 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5"/></svg>',
+  restart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 3v4h-4"/></svg>',
+  play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5-13-7.5Z"/></svg>',
 };
 
 const STAT_TINTS = { cpu: 'tint-blue', ram: 'tint-green', disk: 'tint-purple', clock: 'tint-slate', net: 'tint-teal' };
@@ -113,10 +115,13 @@ function renderStats(s) {
 function serviceCard(svc, info) {
   const running = info && info.state === 'running';
   const dot = `<span class="card-dot dot ${running ? 'dot--green' : 'dot--amber'}"></span>`;
+  const action = svc.container
+    ? `<button type="button" class="card-action" data-restart="${svc.container}" title="${running ? 'Restart' : 'Start'}">${running ? ICONS.restart : ICONS.play}</button>`
+    : '';
   const head = `<div class="card-head">
       <span class="card-icon tint-${svc.tint}">${ICONS[svc.icon] || ''}</span>
       <div><div class="card-name">${svc.name}</div><div class="card-desc">${svc.desc}</div></div>
-    </div>${dot}`;
+    </div>${dot}${action}`;
 
   let body = '';
   if (running && info.cpuPct !== undefined) {
@@ -169,7 +174,7 @@ function renderServices(containers) {
 }
 
 const VIEW_SECTIONS = {
-  top: ['stats-row', 'apps', 'ops', 'dev'],
+  top: ['hero', 'stats-row', 'apps', 'ops', 'dev'],
   apps: ['apps'],
   ops: ['ops'],
   dev: ['dev'],
@@ -177,7 +182,7 @@ const VIEW_SECTIONS = {
 
 function applyView(view) {
   currentView = view;
-  for (const id of ['stats-row', 'apps', 'ops', 'dev']) {
+  for (const id of ['hero', 'stats-row', 'apps', 'ops', 'dev']) {
     el(id).style.display = VIEW_SECTIONS[view].includes(id) ? '' : 'none';
   }
   renderServices(lastContainers);
@@ -200,6 +205,37 @@ function renderClock() {
   const now = new Date();
   el('date-label').textContent = now.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
   el('time-label').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+
+  const h = now.getHours();
+  const part = h < 5 ? 'night' : h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening';
+  el('hero-date').textContent = now
+    .toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' })
+    .toUpperCase();
+  el('hero-greeting').textContent = `Good ${part}, Quyen.`;
+}
+
+function renderHeroSub(containers) {
+  const total = CONFIG.apps.length;
+  const awake = CONFIG.apps.filter((s) => containers[s.container]?.state === 'running').length;
+  el('hero-sub').textContent =
+    awake === total
+      ? 'Your Mac mini is wide awake. Everything is within reach.'
+      : `Your Mac mini is running quietly — ${awake}/${total} apps awake. Everything is within reach.`;
+}
+
+async function restartContainer(btn) {
+  const name = btn.dataset.restart;
+  btn.disabled = true;
+  btn.classList.add('card-action--busy');
+  btn.innerHTML = ICONS.restart;
+  try {
+    const r = await fetch(`/api/restart/${encodeURIComponent(name)}`, { method: 'POST' });
+    if (!r.ok) throw new Error(`restart -> ${r.status}`);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    await refresh();
+  }
 }
 
 async function refresh() {
@@ -210,6 +246,7 @@ async function refresh() {
     ]);
     renderStats(stats);
     renderServices(containers);
+    renderHeroSub(containers);
   } catch (err) {
     console.error('refresh failed', err);
   }
@@ -261,6 +298,15 @@ async function boot() {
   el('opt-show-offline').addEventListener('change', (e) => {
     settings.showOffline = e.target.checked;
     renderServices(lastContainers);
+  });
+
+  // Restart buttons live inside <a class="card"> — swallow the navigation.
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.card-action');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    restartContainer(btn);
   });
 
   CONFIG = await fetch('/api/config').then((r) => r.json());
