@@ -384,3 +384,25 @@ git push origin master
 - [ ] **Step 3: Kiểm tra RAM native khi idle** (`ps aux | grep uvicorn`) — kỳ vọng < 500MB khi model chưa load.
 - [ ] **Step 4: Reboot nguội** — sau reboot: launchd kéo tts-native, LaunchAgent kéo stack, `https://tts.lazybutts.com` sống không thao tác tay.
 - [ ] **Step 5: Rollback drill** — đổi lại Caddyfile block cũ + `docker compose --profile fallback up -d tts-studio` → container phục vụ lại. Ghi chú thời gian thao tác.
+
+## Kết quả nghiệm thu (Task 7)
+
+Chạy 2026-08-30 trên Mac mini M4 (10-core 4P+6E), venv `.venv-native` (Python 3.12.14, torch 2.13.0, ctranslate2 4.8.1). Danh sách benchmark do controller AMEND lại (khác 5 step gốc ở trên) — chi tiết đầy đủ: `.superpowers/sdd/2026-08-30-tts-native-gpu-node/task-7-report.md`.
+
+| # | Benchmark | Đo được | Target | Đạt? |
+|---|---|---|---|---|
+| 1 | Whisper CPU int8 RTF — `small` (beam=5 mặc định) | 1.91x (43.4s audio / 22.7s) | ≥5x | ❌ |
+| 1 | Whisper CPU int8 RTF — `small` (beam=1, phụ) | 3.54x | ≥5x | ❌ (gần hơn) |
+| 1 | Whisper CPU int8 RTF — `medium` (beam=5 mặc định) | 1.05x | ≥2x | ❌ |
+| 1 | Whisper CPU int8 RTF — `medium` (beam=1, phụ) | 1.60x | ≥2x | ❌ (gần hơn) |
+| 2 | MPS vs CPU — matmul 2048×2048 ×50 | CPU 0.618s / MPS 0.267s → **2.31x** | ≥2x | ✅ |
+| 2 | MPS vs CPU — conv2d batch32 ×30 | CPU 5.795s / MPS 0.525s → **11.04x** | ≥2x | ✅ |
+| 3 | Idle RAM (uvicorn :8600, RSS) | 57.2 MB | <500MB | ✅ |
+| 4 | Service health | curl `/` → 200 (3.6ms); `launchctl` state=running | 200 / running | ✅ |
+| 5 | Rollback drill (thực hiện + revert) | **59s tổng** (25s lên fallback, 34s revert); Caddyfile byte-identical sau khi xong (sha256 khớp), `git diff` sạch | thao tác đúng + khôi phục sạch | ✅ |
+| 6 | Reboot readiness (không reboot thật) | `tts-native` RunAtLoad=1; `com.macmini-hub.startup` RunAtLoad=1; OrbStack `start_at_login=true` | cả 3 phải bật | ⚠️ chờ user test reboot thật |
+
+**Concerns:**
+- Whisper RTF không đạt target ở cả hai model, kể cả beam_size=1 (greedy). Nhiều khả năng do ctranslate2 CPU backend trên Apple Silicon (NEON) chưa tối ưu bằng x86 (AVX2/oneDNN) — target ≥5x/≥2x có lẽ dựa trên benchmark x86. Không phải lỗi cấu hình. Đề xuất: chấp nhận RTF hiện tại, hoặc thử lại `cpu_threads=4` (chỉ P-core), hoặc khảo sát runtime whisper chạy được trên MPS (vd. mlx-whisper) nếu cần real-time captioning thật.
+- Container fallback chạy với `ENABLE_HEAVY_TTS=false` trong `.env` — rollback drill xác nhận routing/orchestration đúng và nhanh, nhưng chưa gửi request synthesis thật nên chưa xác nhận fallback CPU phục vụ được TTS nặng thực sự khi cần.
+- Reboot nguội chưa test thật (theo đúng chỉ thị không reboot) — cấu hình tĩnh đều đúng, cần user tự reboot một lần để xác nhận end-to-end.
