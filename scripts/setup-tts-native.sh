@@ -14,6 +14,8 @@ git -C "$TTS_REPO" pull --ff-only
 uv venv --python 3.12 --clear "$VENV"
 # torch bản macOS arm64 có sẵn MPS; các dep còn lại theo requirements.txt
 uv pip install --python "$VENV/bin/python" torch torchaudio
+# app tự cài thêm gói (f5-tts, seed-vc, GPU wheels…) bằng `python -m pip` — venv uv không kèm pip, phải seed
+uv pip install --python "$VENV/bin/python" pip
 uv pip install --python "$VENV/bin/python" -r "$TTS_REPO/requirements.txt"
 # container lấy ffmpeg qua apt; native không có apt nên dùng binary đóng gói sẵn của imageio-ffmpeg (fallback trong ffmpeg.py)
 uv pip install --python "$VENV/bin/python" imageio-ffmpeg
