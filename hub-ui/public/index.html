@@ -64,8 +64,28 @@
     <div class="modal-overlay" id="settings-modal" hidden>
       <div class="modal">
         <h3>Settings</h3>
-        <p class="modal-note">Services are defined in <code>hub-ui/config.json</code> in the macmini-hub repo. Edit + <code>docker compose up -d --build hub-ui</code>.</p>
-        <pre id="config-dump"></pre>
+        <div class="setting-row">
+          <span class="setting-label">Theme</span>
+          <div class="seg" id="seg-theme">
+            <button type="button" data-theme-opt="light">Light</button>
+            <button type="button" data-theme-opt="dark">Dark</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">Auto-refresh</span>
+          <div class="seg" id="seg-refresh">
+            <button type="button" data-refresh="5">5s</button>
+            <button type="button" data-refresh="10">10s</button>
+            <button type="button" data-refresh="30">30s</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">Show offline services on Home</span>
+          <label class="switch">
+            <input type="checkbox" id="opt-show-offline" />
+            <span class="switch-track"></span>
+          </label>
+        </div>
         <button type="button" class="btn" id="settings-close">Close</button>
       </div>
     </div>

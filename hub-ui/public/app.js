@@ -139,10 +139,18 @@ function serviceCard(svc, info) {
 let lastContainers = {};
 let currentView = 'top';
 
-// Home shows only what is awake; the Apps/Ops views list everything.
+const settings = {
+  get showOffline() { try { return localStorage.getItem('hub.showOffline') === '1'; } catch { return false; } },
+  set showOffline(v) { try { localStorage.setItem('hub.showOffline', v ? '1' : '0'); } catch {} },
+  get refreshSec() { try { return Number(localStorage.getItem('hub.refresh')) || 5; } catch { return 5; } },
+  set refreshSec(v) { try { localStorage.setItem('hub.refresh', String(v)); } catch {} },
+};
+
+// Home shows only what is awake (unless the setting says otherwise); the
+// Apps/Ops views list everything.
 function renderServices(containers) {
   lastContainers = containers;
-  const onlineOnly = currentView === 'top';
+  const onlineOnly = currentView === 'top' && !settings.showOffline;
   const filter = (list) =>
     onlineOnly ? list.filter((s) => containers[s.container]?.state === 'running') : list;
 
@@ -240,9 +248,20 @@ async function boot() {
     });
   });
 
-  el('settings-btn').addEventListener('click', () => { el('settings-modal').hidden = false; });
+  el('settings-btn').addEventListener('click', () => { syncSettingsUI(); el('settings-modal').hidden = false; });
   el('settings-close').addEventListener('click', () => { el('settings-modal').hidden = true; });
   el('settings-modal').addEventListener('click', (e) => { if (e.target === el('settings-modal')) el('settings-modal').hidden = true; });
+
+  document.querySelectorAll('[data-theme-opt]').forEach((b) => {
+    b.addEventListener('click', () => { applyTheme(b.dataset.themeOpt); syncSettingsUI(); });
+  });
+  document.querySelectorAll('[data-refresh]').forEach((b) => {
+    b.addEventListener('click', () => { settings.refreshSec = Number(b.dataset.refresh); armRefresh(); syncSettingsUI(); });
+  });
+  el('opt-show-offline').addEventListener('change', (e) => {
+    settings.showOffline = e.target.checked;
+    renderServices(lastContainers);
+  });
 
   CONFIG = await fetch('/api/config').then((r) => r.json());
   document.title = CONFIG.title;
@@ -251,8 +270,20 @@ async function boot() {
   renderClock();
   setInterval(renderClock, 15000);
   await refresh();
-  setInterval(refresh, 5000);
-  el('config-dump').textContent = JSON.stringify(CONFIG, null, 2);
+  armRefresh();
+}
+
+let refreshTimer = null;
+function armRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(refresh, settings.refreshSec * 1000);
+}
+
+function syncSettingsUI() {
+  const theme = document.documentElement.dataset.theme;
+  document.querySelectorAll('[data-theme-opt]').forEach((b) => b.classList.toggle('seg--on', b.dataset.themeOpt === theme));
+  document.querySelectorAll('[data-refresh]').forEach((b) => b.classList.toggle('seg--on', Number(b.dataset.refresh) === settings.refreshSec));
+  el('opt-show-offline').checked = settings.showOffline;
 }
 
 boot();

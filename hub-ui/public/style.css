@@ -368,16 +368,56 @@ a.card:hover { transform: translateY(-2px); border-color: var(--accent); }
   overflow: auto;
   box-shadow: var(--shadow);
 }
-.modal h3 { margin: 0 0 0.5rem; }
-.modal-note { color: var(--text-muted); font-size: 0.85rem; }
-.modal pre {
-  background: var(--card-inset);
-  border-radius: 10px;
-  padding: 0.75rem;
-  font-size: 0.72rem;
-  overflow: auto;
-  max-height: 40vh;
+.modal h3 { margin: 0 0 0.75rem; }
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.4rem;
 }
+.setting-label { font-weight: 600; font-size: 0.9rem; }
+
+.seg { display: inline-flex; background: var(--card-inset); border-radius: 999px; padding: 3px; }
+.seg button {
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.seg button.seg--on { background: var(--panel); color: var(--accent); box-shadow: var(--shadow); }
+
+.switch { position: relative; display: inline-flex; cursor: pointer; }
+.switch input { position: absolute; opacity: 0; }
+.switch-track {
+  width: 42px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--card-inset);
+  transition: background 0.15s ease;
+  position: relative;
+}
+.switch-track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease;
+}
+.switch input:checked + .switch-track { background: var(--accent); }
+.switch input:checked + .switch-track::after { transform: translateX(18px); }
 .btn {
   border: none;
   border-radius: 999px;
