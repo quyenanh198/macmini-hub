@@ -12,8 +12,9 @@ command -v uv >/dev/null || { echo "cần uv: curl -LsSf https://astral.sh/uv/in
 git -C "$TTS_REPO" pull --ff-only
 
 uv venv --python 3.12 --clear "$VENV"
-# torch bản macOS arm64 có sẵn MPS; các dep còn lại theo requirements.txt
-uv pip install --python "$VENV/bin/python" torch torchaudio
+# torch 2.8 (MPS ổn định): torchaudio >=2.9 chuyển sang torchcodec, đòi FFmpeg shared dylibs
+# không có trên máy này — 2.8 còn backend soundfile nên load audio chạy được.
+uv pip install --python "$VENV/bin/python" "torch==2.8.0" "torchaudio==2.8.0" soundfile
 # app tự cài thêm gói (f5-tts, seed-vc, GPU wheels…) bằng `python -m pip` — venv uv không kèm pip, phải seed
 uv pip install --python "$VENV/bin/python" pip
 uv pip install --python "$VENV/bin/python" -r "$TTS_REPO/requirements.txt"
