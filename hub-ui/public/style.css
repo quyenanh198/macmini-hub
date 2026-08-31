@@ -308,6 +308,31 @@ a.card:hover { transform: translateY(-2px); border-color: var(--accent); }
 .card-action:disabled { opacity: 0.6; cursor: default; }
 .card-action--busy svg { animation: spin 0.9s linear infinite; }
 .card-action--second { right: 3.1rem; }
+.card-action--third { right: 5.5rem; }
+
+.watchlist-text {
+  width: 100%;
+  min-height: 40vh;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75rem;
+  background: var(--card-inset);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.6rem;
+  resize: vertical;
+}
+
+.modal-actions { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 0.5rem; }
+.secondary-button {
+  background: var(--card-inset);
+  color: var(--text);
+  border: none;
+  border-radius: 999px;
+  padding: 0.55rem 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
 .card-action--ok { background: var(--tint-green-bg); color: var(--tint-green-fg); }
 .card-action--err { background: #fde8e8; color: #d33; }
 

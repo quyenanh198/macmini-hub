@@ -342,6 +342,41 @@ const server = createServer(async (req, res) => {
       res.end(JSON.stringify({ ok: true }));
       return;
     }
+    if (url.pathname === '/api/stock/watchlist') {
+      const wlPath = '/stockdata/watchlist.json';
+      if (req.method === 'GET') {
+        const data = await fs.readFile(wlPath, 'utf8').catch(() => null);
+        if (data === null) {
+          res.writeHead(404, { 'content-type': 'application/json' });
+          res.end(JSON.stringify({ error: 'watchlist_not_seeded', hint: 'restart stock-site once (new entrypoint seeds it)' }));
+          return;
+        }
+        res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
+        res.end(data);
+        return;
+      }
+      if (req.method === 'PUT') {
+        let body = '';
+        for await (const c of req) body += c;
+        let parsed;
+        try {
+          parsed = JSON.parse(body);
+        } catch {
+          res.writeHead(422, { 'content-type': 'application/json' });
+          res.end(JSON.stringify({ error: 'invalid_json' }));
+          return;
+        }
+        if (!Array.isArray(parsed.tickers) || !parsed.tickers.every((t) => t && typeof t.symbol === 'string')) {
+          res.writeHead(422, { 'content-type': 'application/json' });
+          res.end(JSON.stringify({ error: 'tickers_must_be_array_of_{symbol,...}' }));
+          return;
+        }
+        await fs.writeFile(wlPath, JSON.stringify(parsed, null, 2) + '\n');
+        res.writeHead(200, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ ok: true, tickers: parsed.tickers.length }));
+        return;
+      }
+    }
     if (url.pathname === '/api/stock/generate' && req.method === 'POST') {
       if (stockGenRunning) {
         res.writeHead(409, { 'content-type': 'application/json' });

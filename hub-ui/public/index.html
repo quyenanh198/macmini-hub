@@ -100,6 +100,19 @@
       </div>
     </div>
 
+    <div class="modal-overlay" id="watchlist-modal" hidden>
+      <div class="modal">
+        <h3>Stock watchlist</h3>
+        <p class="modal-note">Sửa JSON (tickers / benchmarks / sectors) rồi Lưu. Sau đó bấm nút tạo báo cáo trên thẻ Stock Site để chạy lại với danh sách mới.</p>
+        <textarea id="watchlist-text" class="watchlist-text" spellcheck="false"></textarea>
+        <p class="modal-note" id="watchlist-status"></p>
+        <div class="modal-actions">
+          <button type="button" class="secondary-button" id="watchlist-close">Đóng</button>
+          <button type="button" class="btn" id="watchlist-save">Lưu</button>
+        </div>
+      </div>
+    </div>
+
     <script src="/app.js?v=__V__"></script>
   </body>
 </html>

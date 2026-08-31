@@ -25,6 +25,7 @@ const ICONS = {
   ext: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4 10 14"/><path d="M20 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5"/></svg>',
   restart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 3v4h-4"/></svg>',
   play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5-13-7.5Z"/></svg>',
+  list: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1" fill="currentColor"/><circle cx="3.5" cy="12" r="1" fill="currentColor"/><circle cx="3.5" cy="18" r="1" fill="currentColor"/></svg>',
   reportgen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m6 15 4-5 3 3 5-7"/><path d="M19 3v5h-5" transform="translate(1,-1)"/></svg>',
 };
 
@@ -121,11 +122,12 @@ function serviceCard(svc, info) {
     : '';
   const gen = svc.name === 'Stock Site'
     ? `<button type="button" class="card-action card-action--second" data-stockgen="1" title="Tạo báo cáo mới ngay">${ICONS.reportgen}</button>`
+      + `<button type="button" class="card-action card-action--third" data-watchlist="1" title="Sửa watchlist">${ICONS.list}</button>`
     : '';
   const head = `<div class="card-head">
       <span class="card-icon tint-${svc.tint}">${ICONS[svc.icon] || ''}</span>
       <div><div class="card-name">${svc.name}</div><div class="card-desc">${svc.desc}</div></div>
-    </div>${gen ? dot.replace('class="card-dot', 'style="right:5.4rem" class="card-dot') : dot}${action}${gen}`;
+    </div>${gen ? dot.replace('class="card-dot', 'style="right:7.6rem" class="card-dot') : dot}${action}${gen}`;
 
   let body = '';
   if (running && info.cpuPct !== undefined) {
@@ -282,6 +284,35 @@ function applyTheme(theme) {
   try { localStorage.setItem('hub.theme', theme); } catch {}
 }
 
+async function openWatchlist() {
+  const modal = el('watchlist-modal');
+  const ta = el('watchlist-text');
+  el('watchlist-status').textContent = '';
+  try {
+    const r = await fetch('/api/stock/watchlist');
+    if (!r.ok) throw new Error((await r.json()).hint || r.status);
+    ta.value = JSON.stringify(await r.json(), null, 2);
+    modal.hidden = false;
+  } catch (err) {
+    el('watchlist-status').textContent = String(err.message || err);
+    ta.value = '';
+    modal.hidden = false;
+  }
+}
+
+async function saveWatchlist() {
+  const st = el('watchlist-status');
+  st.textContent = 'Đang lưu…';
+  try {
+    const r = await fetch('/api/stock/watchlist', { method: 'PUT', body: el('watchlist-text').value });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || r.status);
+    st.textContent = `Đã lưu (${j.tickers} mã). Bấm nút tạo báo cáo để chạy lại với danh sách mới.`;
+  } catch (err) {
+    st.textContent = `Lỗi: ${err.message || err}`;
+  }
+}
+
 async function boot() {
   document.querySelectorAll('[data-icon]').forEach((n) => { n.innerHTML = ICONS[n.dataset.icon] || ''; });
 
@@ -308,6 +339,9 @@ async function boot() {
   el('settings-btn').addEventListener('click', () => { syncSettingsUI(); el('settings-modal').hidden = false; });
   el('settings-close').addEventListener('click', () => { el('settings-modal').hidden = true; });
   el('settings-modal').addEventListener('click', (e) => { if (e.target === el('settings-modal')) el('settings-modal').hidden = true; });
+  el('watchlist-close').addEventListener('click', () => { el('watchlist-modal').hidden = true; });
+  el('watchlist-save').addEventListener('click', saveWatchlist);
+  el('watchlist-modal').addEventListener('click', (e) => { if (e.target === el('watchlist-modal')) el('watchlist-modal').hidden = true; });
 
   document.querySelectorAll('[data-theme-opt]').forEach((b) => {
     b.addEventListener('click', () => { applyTheme(b.dataset.themeOpt); syncSettingsUI(); });
@@ -327,6 +361,7 @@ async function boot() {
     e.preventDefault();
     e.stopPropagation();
     if (btn.dataset.stockgen) generateStockReports(btn);
+    else if (btn.dataset.watchlist) openWatchlist();
     else restartContainer(btn);
   });
 

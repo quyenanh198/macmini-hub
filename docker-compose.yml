@@ -10,6 +10,7 @@ services:
       TZ: ${TZ}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${DATA_ROOT:?DATA_ROOT must be set}/stock-reports:/stockdata
     ports:
       - "3000:8090"
 
