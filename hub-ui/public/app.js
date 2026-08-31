@@ -25,6 +25,7 @@ const ICONS = {
   ext: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4 10 14"/><path d="M20 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5"/></svg>',
   restart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 3v4h-4"/></svg>',
   play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5-13-7.5Z"/></svg>',
+  reportgen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m6 15 4-5 3 3 5-7"/><path d="M19 3v5h-5" transform="translate(1,-1)"/></svg>',
 };
 
 const STAT_TINTS = { cpu: 'tint-blue', ram: 'tint-green', disk: 'tint-purple', clock: 'tint-slate', net: 'tint-teal' };
@@ -118,10 +119,13 @@ function serviceCard(svc, info) {
   const action = svc.container
     ? `<button type="button" class="card-action" data-restart="${svc.container}" title="${running ? 'Restart' : 'Start'}">${running ? ICONS.restart : ICONS.play}</button>`
     : '';
+  const gen = svc.name === 'Stock Site'
+    ? `<button type="button" class="card-action card-action--second" data-stockgen="1" title="Tạo báo cáo mới ngay">${ICONS.reportgen}</button>`
+    : '';
   const head = `<div class="card-head">
       <span class="card-icon tint-${svc.tint}">${ICONS[svc.icon] || ''}</span>
       <div><div class="card-name">${svc.name}</div><div class="card-desc">${svc.desc}</div></div>
-    </div>${dot}${action}`;
+    </div>${gen ? dot.replace('class="card-dot', 'style="right:5.4rem" class="card-dot') : dot}${action}${gen}`;
 
   let body = '';
   if (running && info.cpuPct !== undefined) {
@@ -223,6 +227,22 @@ function renderHeroSub(containers) {
       : `Your Mac mini is running quietly — ${awake}/${total} apps awake. Everything is within reach.`;
 }
 
+async function generateStockReports(btn) {
+  btn.disabled = true;
+  btn.classList.add('card-action--busy');
+  try {
+    const r = await fetch('/api/stock/generate', { method: 'POST' });
+    btn.classList.add(r.ok ? 'card-action--ok' : 'card-action--err');
+  } catch {
+    btn.classList.add('card-action--err');
+  } finally {
+    btn.classList.remove('card-action--busy');
+    btn.disabled = false;
+    setTimeout(() => btn.classList.remove('card-action--ok', 'card-action--err'), 4000);
+    refresh();
+  }
+}
+
 async function restartContainer(btn) {
   const name = btn.dataset.restart;
   btn.disabled = true;
@@ -300,18 +320,20 @@ async function boot() {
     renderServices(lastContainers);
   });
 
-  // Restart buttons live inside <a class="card"> — swallow the navigation.
+  // Action buttons live inside <a class="card"> — swallow the navigation.
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('.card-action');
     if (!btn) return;
     e.preventDefault();
     e.stopPropagation();
-    restartContainer(btn);
+    if (btn.dataset.stockgen) generateStockReports(btn);
+    else restartContainer(btn);
   });
 
   CONFIG = await fetch('/api/config').then((r) => r.json());
   document.title = CONFIG.title;
   el('host-chip').textContent = CONFIG.host;
+  el('ntfy-topic').textContent = CONFIG.alerts?.ntfy_topic || 'off';
   renderDev();
   renderClock();
   setInterval(renderClock, 15000);

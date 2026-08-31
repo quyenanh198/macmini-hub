@@ -107,10 +107,14 @@ setInterval(sample, SAMPLE_MS);
 
 // ---------- docker ----------
 
-function dockerCall(apiPath, method = 'GET', timeoutMs = 4000) {
+function dockerCall(apiPath, method = 'GET', timeoutMs = 4000, bodyObj = null) {
   return new Promise((resolve, reject) => {
+    const payload = bodyObj ? JSON.stringify(bodyObj) : null;
+    const headers = payload
+      ? { 'content-type': 'application/json', 'content-length': Buffer.byteLength(payload) }
+      : {};
     const req = httpRequest(
-      { socketPath: DOCKER_SOCK, path: apiPath, method },
+      { socketPath: DOCKER_SOCK, path: apiPath, method, headers },
       (res) => {
         let body = '';
         res.on('data', (c) => (body += c));
@@ -133,7 +137,7 @@ function dockerCall(apiPath, method = 'GET', timeoutMs = 4000) {
     );
     req.on('error', reject);
     req.setTimeout(timeoutMs, () => req.destroy(new Error('docker timeout')));
-    req.end();
+    req.end(payload ?? undefined);
   });
 }
 
@@ -202,6 +206,104 @@ async function containerInfo() {
   return out;
 }
 
+// ---------- down alerts (ntfy) ----------
+
+// Poll the same containerInfo the dashboard uses; on a running→down transition
+// for services marked alert:true, push to ntfy.sh so phones get notified.
+// Sablier-managed apps carry alert:false — sleeping is their normal state.
+const NTFY_TOPIC = CONFIG.alerts?.ntfy_topic || null;
+const alertState = new Map();
+let alertBaselined = false;
+
+async function notifyNtfy(title, body) {
+  if (!NTFY_TOPIC) return;
+  try {
+    await fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
+      method: 'POST',
+      headers: { Title: title, Priority: 'high', Tags: 'rotating_light' }, // Title header: ASCII only — emoji breaks fetch ByteString
+      body,
+    });
+  } catch (err) {
+    console.error('ntfy failed:', err.message);
+  }
+}
+
+async function alertSweep() {
+  try {
+    const info = await containerInfo();
+    for (const s of [...CONFIG.apps, ...CONFIG.ops]) {
+      if (!s.alert) continue;
+      const key = s.container || s.name;
+      const up = info[key]?.state === 'running';
+      const prev = alertState.get(key);
+      alertState.set(key, up);
+      if (!alertBaselined || prev === undefined || prev === up) continue;
+      if (!up) {
+        await notifyNtfy(`${s.name} DOWN`, `${s.name}: ${info[key]?.state || 'missing'} — ${new Date().toLocaleString()}`);
+      } else {
+        await notifyNtfy(`${s.name} back up`, `${s.name} recovered — ${new Date().toLocaleString()}`);
+      }
+    }
+    alertBaselined = true;
+  } catch (err) {
+    console.error('alert sweep failed:', err.message);
+  }
+}
+
+if (NTFY_TOPIC) {
+  setInterval(alertSweep, 60000);
+  alertSweep();
+}
+
+// ---------- stock report generation ----------
+
+// Runs the same commands the container's cron uses, on demand. Docker exec via
+// the socket: create an exec, start it (hijacked stream), then poll inspect
+// until it exits.
+const STOCK_CONTAINER = 'macmini-hub-stock-site-1';
+let stockGenRunning = false;
+
+function dockerStream(apiPath, bodyObj) {
+  return new Promise((resolve, reject) => {
+    const payload = bodyObj ? JSON.stringify(bodyObj) : '';
+    const req = httpRequest(
+      {
+        socketPath: DOCKER_SOCK,
+        path: apiPath,
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'content-length': Buffer.byteLength(payload) },
+      },
+      (res) => {
+        let body = '';
+        res.on('data', (c) => (body += c));
+        res.on('end', () => {
+          if (res.statusCode && res.statusCode >= 400) reject(new Error(`docker ${apiPath} -> ${res.statusCode}`));
+          else resolve(body);
+        });
+      },
+    );
+    req.on('error', reject);
+    req.setTimeout(600000, () => req.destroy(new Error('docker exec timeout')));
+    req.end(payload);
+  });
+}
+
+async function generateStockReports() {
+  await dockerCall(`/v1.44/containers/${STOCK_CONTAINER}/start`, 'POST', 60000).catch((err) => {
+    if (!String(err).includes('304')) throw err;
+  });
+  await new Promise((r) => setTimeout(r, 3000));
+  const exec = await dockerCall(
+    `/v1.44/containers/${STOCK_CONTAINER}/exec`,
+    'POST',
+    10000,
+    { AttachStdout: true, AttachStderr: true, Cmd: ['sh', '-c', 'cd /site && npm run reports:weekly && npx @11ty/eleventy'] },
+  );
+  await dockerStream(`/v1.44/exec/${exec.Id}/start`, { Detach: false, Tty: true });
+  const inspect = await dockerCall(`/v1.44/exec/${exec.Id}/json`);
+  return inspect.ExitCode ?? -1;
+}
+
 // ---------- http ----------
 
 const MIME = {
@@ -238,6 +340,22 @@ const server = createServer(async (req, res) => {
       await dockerCall(`/v1.44/containers/${encodeURIComponent(name)}/restart?t=5`, 'POST', 30000);
       res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
       res.end(JSON.stringify({ ok: true }));
+      return;
+    }
+    if (url.pathname === '/api/stock/generate' && req.method === 'POST') {
+      if (stockGenRunning) {
+        res.writeHead(409, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ error: 'already_running' }));
+        return;
+      }
+      stockGenRunning = true;
+      try {
+        const exitCode = await generateStockReports();
+        res.writeHead(exitCode === 0 ? 200 : 500, { 'content-type': 'application/json', 'cache-control': 'no-store' });
+        res.end(JSON.stringify({ ok: exitCode === 0, exitCode }));
+      } finally {
+        stockGenRunning = false;
+      }
       return;
     }
     if (url.pathname === '/api/config') {

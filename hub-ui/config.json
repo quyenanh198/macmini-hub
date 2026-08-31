@@ -8,7 +8,8 @@
       "href": "https://tts.lazybutts.com/",
       "health": "http://host.docker.internal:8600/",
       "icon": "waveform",
-      "tint": "blue"
+      "tint": "blue",
+      "alert": true
     },
     {
       "name": "Cadence2",
@@ -16,7 +17,8 @@
       "href": "https://cadence.lazybutts.com/",
       "container": "macmini-hub-cadence2-1",
       "icon": "book",
-      "tint": "green"
+      "tint": "green",
+      "alert": false
     },
     {
       "name": "Stock Site",
@@ -24,7 +26,8 @@
       "href": "https://stock.lazybutts.com/",
       "container": "macmini-hub-stock-site-1",
       "icon": "chart",
-      "tint": "teal"
+      "tint": "teal",
+      "alert": false
     },
     {
       "name": "Chat",
@@ -32,7 +35,8 @@
       "href": "https://chat.lazybutts.com/",
       "container": "macmini-hub-chat-1",
       "icon": "chat",
-      "tint": "sky"
+      "tint": "sky",
+      "alert": true
     }
   ],
   "ops": [
@@ -42,28 +46,32 @@
       "href": "http://192.168.0.120:8081/",
       "container": "macmini-hub-dozzle-1",
       "icon": "logs",
-      "tint": "teal"
+      "tint": "teal",
+      "alert": true
     },
     {
       "name": "Caddy",
       "desc": "Host router + sablier wake",
       "container": "macmini-hub-caddy-1",
       "icon": "fork",
-      "tint": "green"
+      "tint": "green",
+      "alert": true
     },
     {
       "name": "Cloudflared",
       "desc": "Tunnel to lazybutts.com",
       "container": "macmini-hub-cloudflared-1",
       "icon": "cloud",
-      "tint": "sky"
+      "tint": "sky",
+      "alert": true
     },
     {
       "name": "Sablier",
       "desc": "Scale-to-zero for idle apps",
       "container": "macmini-hub-sablier-1",
       "icon": "sleep",
-      "tint": "slate"
+      "tint": "slate",
+      "alert": true
     }
   ],
   "dev": [
@@ -85,5 +93,8 @@
       "domain": "one.dash.cloudflare.com",
       "icon": "cloud"
     }
-  ]
+  ],
+  "alerts": {
+    "ntfy_topic": "lazybutts-hub-034b6749"
+  }
 }

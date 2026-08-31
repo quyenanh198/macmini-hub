@@ -307,6 +307,9 @@ a.card:hover { transform: translateY(-2px); border-color: var(--accent); }
 .card-action:hover { background: var(--tint-blue-bg); color: var(--accent); }
 .card-action:disabled { opacity: 0.6; cursor: default; }
 .card-action--busy svg { animation: spin 0.9s linear infinite; }
+.card-action--second { right: 3.1rem; }
+.card-action--ok { background: var(--tint-green-bg); color: var(--tint-green-fg); }
+.card-action--err { background: #fde8e8; color: #d33; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
