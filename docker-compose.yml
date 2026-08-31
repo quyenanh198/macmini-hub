@@ -108,6 +108,9 @@ services:
       TZ: ${TZ}
       SESSION_SECRET: ${CHAT_SESSION_SECRET:?CHAT_SESSION_SECRET must be set}
       BOOTSTRAP_INVITE: ${CHAT_BOOTSTRAP_INVITE:-}
+      VAPID_PUBLIC_KEY: ${CHAT_VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${CHAT_VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: mailto:quyenanh198@gmail.com
     volumes:
       - ${DATA_ROOT:?DATA_ROOT must be set}/chat/db:/data/db
       - ${DATA_ROOT:?DATA_ROOT must be set}/chat/media:/data/media
