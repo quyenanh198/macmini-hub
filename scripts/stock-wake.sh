@@ -5,6 +5,9 @@
 # phút trong ~45 phút để app thức trọn cửa sổ cron + rebuild.
 set -uo pipefail
 
+# launchd chạy với PATH tối giản — docker nằm ở /usr/local/bin.
+export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
+
 LOG="$HOME/Library/Logs/stock-wake.log"
 echo "=== $(date) wake window start ===" >> "$LOG"
 for i in $(seq 1 9); do
