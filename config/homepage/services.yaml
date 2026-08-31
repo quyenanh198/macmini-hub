@@ -2,7 +2,7 @@
     - TTS Studio:
         icon: mdi-microphone-message
         href: https://tts.lazybutts.com/
-        description: TTS / ASR / voice clone (+ AudioExtract)
+        description: TTS / ASR / voice clone
         server: local
         container: macmini-hub-tts-studio-1
         showStats: true

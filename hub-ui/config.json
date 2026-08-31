@@ -4,7 +4,7 @@
   "apps": [
     {
       "name": "TTS Studio",
-      "desc": "TTS / ASR / voice clone (+ AudioExtract)",
+      "desc": "TTS / ASR / voice clone",
       "href": "https://tts.lazybutts.com/",
       "health": "http://host.docker.internal:8600/",
       "icon": "waveform",
