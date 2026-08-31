@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        app: [tts-studio, cadence2, stock-site, chat]
+        app: [tts-studio, cadence2, stock-site, chat, ntvv]
     steps:
       - uses: actions/checkout@v4
         with:
