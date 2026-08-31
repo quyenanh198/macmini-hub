@@ -16,6 +16,17 @@
 
 	@chat host chat.lazybutts.com
 	handle @chat {
+		# Nông trại vui vẻ: game sống ở /farm/* cùng host để dùng chung
+		# cookie đăng nhập của Chat; container ngủ khi không ai chơi.
+		@farm path /farm /farm/*
+		route @farm {
+			sablier http://sablier:10000 {
+				group farm
+				session_duration 15m
+				dynamic
+			}
+			reverse_proxy farm:8090
+		}
 		reverse_proxy chat:8082
 	}
 

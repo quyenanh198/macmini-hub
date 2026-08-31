@@ -100,6 +100,23 @@ services:
     volumes:
       - ${DATA_ROOT:?DATA_ROOT must be set}/stock-reports:/site/reports
 
+  # Nông trại vui vẻ — game của cả nhà, sống ở chat.lazybutts.com/farm/*
+  # (caddy route theo path, sablier đánh thức; xác thực mượn cookie của Chat).
+  farm:
+    image: ghcr.io/quyenanh198/ntvv:latest
+    profiles: [apps]
+    restart: unless-stopped
+    mem_limit: 256m
+    labels:
+      - sablier.enable=true
+      - sablier.group=farm
+    environment:
+      TZ: ${TZ}
+      CHAT_API_URL: http://chat:8082
+      FARM_INTERNAL_SECRET: ${FARM_INTERNAL_SECRET:-}
+    volumes:
+      - ${DATA_ROOT:?DATA_ROOT must be set}/farm:/data
+
   chat:
     image: ghcr.io/quyenanh198/chat:latest
     restart: unless-stopped
@@ -112,6 +129,7 @@ services:
       VAPID_PRIVATE_KEY: ${CHAT_VAPID_PRIVATE_KEY:-}
       VAPID_SUBJECT: mailto:quyenanh198@gmail.com
       GIF_GIPHY_KEY: ${CHAT_GIPHY_KEY:-}
+      FARM_INTERNAL_SECRET: ${FARM_INTERNAL_SECRET:-}
     volumes:
       - ${DATA_ROOT:?DATA_ROOT must be set}/chat/db:/data/db
       - ${DATA_ROOT:?DATA_ROOT must be set}/chat/media:/data/media

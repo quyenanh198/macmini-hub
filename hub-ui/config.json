@@ -37,6 +37,15 @@
       "icon": "chat",
       "tint": "sky",
       "alert": true
+    },
+    {
+      "name": "Nông trại vui vẻ",
+      "desc": "Family farm game (in Chat)",
+      "href": "https://chat.lazybutts.com/farm/",
+      "container": "macmini-hub-farm-1",
+      "icon": "leaf",
+      "tint": "green",
+      "alert": false
     }
   ],
   "ops": [

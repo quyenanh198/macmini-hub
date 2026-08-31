@@ -47,9 +47,24 @@ else
   sqlite3 "$SRC/chat/db/lazybutts.sqlite3" ".backup '$STAGE/chat-db/lazybutts.sqlite3'" >> "$LOG" 2>&1
 fi
 
+# 1b. Farm DB (Nông trại vui vẻ): cùng luật với chat — container đang chạy
+# thì backup từ TRONG container; đang ngủ (thường là vậy lúc 3h sáng) thì
+# copy thẳng file là an toàn.
+mkdir -p "$STAGE/farm-db"
+if docker ps --format '{{.Names}}' | grep -q '^macmini-hub-farm-1$'; then
+  docker exec macmini-hub-farm-1 node -e '
+    const db = require("better-sqlite3")("/data/farm.sqlite3", { readonly: true });
+    db.backup("/data/.nightly-backup.sqlite3").then(() => process.exit(0))
+      .catch((e) => { console.error(e); process.exit(1); });
+  ' >> "$LOG" 2>&1
+  mv "$SRC/farm/.nightly-backup.sqlite3" "$STAGE/farm-db/farm.sqlite3"
+elif [ -f "$SRC/farm/farm.sqlite3" ]; then
+  cp "$SRC/farm/farm.sqlite3" "$STAGE/farm-db/farm.sqlite3"
+fi
+
 # 2. Toàn bộ hubdata trừ thứ tải lại được.
 rsync -a --exclude 'TTSStudio/models' --exclude 'TTSStudio/cache' --exclude 'TTSStudio/bin' \
-      --exclude 'chat/db' "$SRC/" "$STAGE/hubdata/" >> "$LOG" 2>&1
+      --exclude 'chat/db' --exclude 'farm' "$SRC/" "$STAGE/hubdata/" >> "$LOG" 2>&1
 
 # 3. Secrets + config ngoài git.
 cp "$HUB_REPO/.env" "$STAGE/env" 2>>"$LOG" || true
