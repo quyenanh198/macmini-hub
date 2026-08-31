@@ -7,3 +7,4 @@ config/homepage/custom.css
 config/homepage/custom.js
 config/homepage/kubernetes.yaml
 config/homepage/logs/
+config/dozzle/users.yml

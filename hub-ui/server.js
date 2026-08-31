@@ -19,6 +19,15 @@ const DOCKER_SOCK = process.env.DOCKER_SOCK || '/var/run/docker.sock';
 const HISTORY_LEN = 60;
 const SAMPLE_MS = 5000;
 const BOOT_VERSION = String(Date.now());
+const HUB_TOKEN = process.env.HUB_UI_TOKEN || '';
+
+// Mutating endpoints require the shared token when one is configured —
+// the dashboard sits open on the LAN, and restart/exec/watchlist-write
+// must not be drive-by callable from any wifi client.
+function authorized(req) {
+  if (!HUB_TOKEN) return true;
+  return req.headers['x-hub-token'] === HUB_TOKEN;
+}
 
 // ---------- host stats sampling ----------
 
@@ -329,6 +338,11 @@ const server = createServer(async (req, res) => {
       return;
     }
     if (url.pathname.startsWith('/api/restart/') && req.method === 'POST') {
+      if (!authorized(req)) {
+        res.writeHead(401, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ error: 'token_required' }));
+        return;
+      }
       const name = decodeURIComponent(url.pathname.slice('/api/restart/'.length));
       // Only containers this dashboard manages — never arbitrary names.
       const known = [...CONFIG.apps, ...CONFIG.ops].some((s) => s.container === name);
@@ -356,6 +370,11 @@ const server = createServer(async (req, res) => {
         return;
       }
       if (req.method === 'PUT') {
+        if (!authorized(req)) {
+          res.writeHead(401, { 'content-type': 'application/json' });
+          res.end(JSON.stringify({ error: 'token_required' }));
+          return;
+        }
         let body = '';
         for await (const c of req) body += c;
         let parsed;
@@ -378,6 +397,11 @@ const server = createServer(async (req, res) => {
       }
     }
     if (url.pathname === '/api/stock/generate' && req.method === 'POST') {
+      if (!authorized(req)) {
+        res.writeHead(401, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ error: 'token_required' }));
+        return;
+      }
       if (stockGenRunning) {
         res.writeHead(409, { 'content-type': 'application/json' });
         res.end(JSON.stringify({ error: 'already_running' }));

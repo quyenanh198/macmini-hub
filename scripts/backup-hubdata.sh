@@ -1,8 +1,11 @@
 #!/bin/bash
-# Backup hằng đêm cho /Volumes/hubdata → iCloud Drive (offsite thật khi iCloud sync).
-# Snapshot theo ngày với hardlink (--link-dest) nên mỗi bản chỉ tốn dung lượng phần thay đổi.
-# Loại trừ: model AI tải lại được (6GB+), cache, binary. Chat DB copy bằng sqlite .backup
-# để nhất quán khi app đang ghi. Giữ 14 bản gần nhất.
+# Backup hằng đêm /Volumes/hubdata → iCloud Drive, MÃ HOÁ (aes-256, khoá nằm ngoài iCloud).
+# Khoá: ~/.config/lazybutts/backup.key — tự sinh lần đầu; LƯU BẢN SAO vào password manager,
+# mất khoá = mất backup. Giữ 14 bản .tar.gz.enc mới nhất.
+#
+# Khôi phục:
+#   openssl enc -d -aes-256-cbc -pbkdf2 -pass file:$HOME/.config/lazybutts/backup.key \
+#     -in hubdata-<stamp>.tar.gz.enc | tar xzf - -C <đích>
 set -euo pipefail
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
@@ -11,31 +14,43 @@ HUB_REPO="${HUB_REPO:-$HOME/macmini-hub}"
 ICLOUD="$HOME/Library/Mobile Documents/com~apple~CloudDocs"
 DEST_ROOT="${BACKUP_DEST:-$ICLOUD/Backups/hubdata}"
 [ -d "$ICLOUD" ] || DEST_ROOT="${BACKUP_DEST:-$HOME/Backups/hubdata}"
+KEYFILE="$HOME/.config/lazybutts/backup.key"
 STAMP=$(date '+%Y-%m-%d_%H%M')
-DEST="$DEST_ROOT/$STAMP"
 LOG="$HOME/Library/Logs/hubdata-backup.log"
 
-echo "=== $(date) backup start -> $DEST ===" >> "$LOG"
-mkdir -p "$DEST"
+echo "=== $(date) backup start ===" >> "$LOG"
+mkdir -p "$DEST_ROOT"
 
-# 1. Chat DB: bản sao nhất quán (WAL đang mở) + media qua rsync bên dưới.
-mkdir -p "$DEST/chat-db"
-sqlite3 "$SRC/chat/db/lazybutts.sqlite3" ".backup '$DEST/chat-db/lazybutts.sqlite3'" >> "$LOG" 2>&1
+if [ ! -f "$KEYFILE" ]; then
+  mkdir -p "$(dirname "$KEYFILE")"
+  openssl rand -hex 32 > "$KEYFILE"
+  chmod 600 "$KEYFILE"
+  echo "GENERATED NEW BACKUP KEY at $KEYFILE — save a copy in your password manager!" >> "$LOG"
+fi
+
+STAGE=$(mktemp -d)
+trap 'rm -rf "$STAGE"' EXIT
+
+# 1. Chat DB: bản sao nhất quán (WAL đang mở).
+mkdir -p "$STAGE/chat-db"
+sqlite3 "$SRC/chat/db/lazybutts.sqlite3" ".backup '$STAGE/chat-db/lazybutts.sqlite3'" >> "$LOG" 2>&1
 
 # 2. Toàn bộ hubdata trừ thứ tải lại được.
-LINKOPT=()
-[ -e "$DEST_ROOT/latest" ] && LINKOPT=(--link-dest="$DEST_ROOT/latest")
 rsync -a --exclude 'TTSStudio/models' --exclude 'TTSStudio/cache' --exclude 'TTSStudio/bin' \
-      --exclude 'chat/db' "${LINKOPT[@]}" "$SRC/" "$DEST/hubdata/" >> "$LOG" 2>&1
+      --exclude 'chat/db' "$SRC/" "$STAGE/hubdata/" >> "$LOG" 2>&1
 
-# 3. Secrets + máy chủ config không nằm trong git.
-cp "$HUB_REPO/.env" "$DEST/env" 2>>"$LOG" || true
+# 3. Secrets + config ngoài git.
+cp "$HUB_REPO/.env" "$STAGE/env" 2>>"$LOG" || true
 
-ln -sfn "$DEST" "$DEST_ROOT/latest"
+# 4. Đóng gói + mã hoá.
+OUT="$DEST_ROOT/hubdata-$STAMP.tar.gz.enc"
+tar czf - -C "$STAGE" . | openssl enc -aes-256-cbc -pbkdf2 -salt -pass "file:$KEYFILE" -out "$OUT"
 
-# 4. Prune: giữ 14 snapshot mới nhất (BSD tail: bỏ 14 dòng đầu của danh sách mới→cũ).
-ls -1d "$DEST_ROOT"/20* 2>/dev/null | sort -r | tail -n +15 | while read -r old; do
-  rm -rf "$old"; echo "pruned $old" >> "$LOG"
+# 5. Prune: giữ 14 bản mới nhất.
+ls -1 "$DEST_ROOT"/hubdata-*.tar.gz.enc 2>/dev/null | sort -r | tail -n +15 | while read -r old; do
+  rm -f "$old"; echo "pruned $old" >> "$LOG"
 done
+# Dọn snapshot dạng thư mục cũ (phiên bản script trước, không mã hoá).
+rm -rf "$DEST_ROOT"/20* "$DEST_ROOT/latest" 2>/dev/null || true
 
-echo "=== $(date) backup done ($(du -sh "$DEST" | cut -f1)) ===" >> "$LOG"
+echo "=== $(date) backup done ($(du -h "$OUT" | cut -f1 | tr -d ' ')) ===" >> "$LOG"

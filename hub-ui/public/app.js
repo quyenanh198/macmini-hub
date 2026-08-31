@@ -229,11 +229,26 @@ function renderHeroSub(containers) {
       : `Your Mac mini is running quietly — ${awake}/${total} apps awake. Everything is within reach.`;
 }
 
+async function authedFetch(url, opts = {}) {
+  let token = '';
+  try { token = localStorage.getItem('hub.token') || ''; } catch {}
+  const doFetch = (t) => fetch(url, { ...opts, headers: { ...(opts.headers || {}), 'x-hub-token': t } });
+  let r = await doFetch(token);
+  if (r.status === 401) {
+    const entered = prompt('Hub token (từ .env HUB_UI_TOKEN):');
+    if (entered) {
+      try { localStorage.setItem('hub.token', entered.trim()); } catch {}
+      r = await doFetch(entered.trim());
+    }
+  }
+  return r;
+}
+
 async function generateStockReports(btn) {
   btn.disabled = true;
   btn.classList.add('card-action--busy');
   try {
-    const r = await fetch('/api/stock/generate', { method: 'POST' });
+    const r = await authedFetch('/api/stock/generate', { method: 'POST' });
     btn.classList.add(r.ok ? 'card-action--ok' : 'card-action--err');
   } catch {
     btn.classList.add('card-action--err');
@@ -251,7 +266,7 @@ async function restartContainer(btn) {
   btn.classList.add('card-action--busy');
   btn.innerHTML = ICONS.restart;
   try {
-    const r = await fetch(`/api/restart/${encodeURIComponent(name)}`, { method: 'POST' });
+    const r = await authedFetch(`/api/restart/${encodeURIComponent(name)}`, { method: 'POST' });
     if (!r.ok) throw new Error(`restart -> ${r.status}`);
   } catch (err) {
     console.error(err);
@@ -304,7 +319,7 @@ async function saveWatchlist() {
   const st = el('watchlist-status');
   st.textContent = 'Đang lưu…';
   try {
-    const r = await fetch('/api/stock/watchlist', { method: 'PUT', body: el('watchlist-text').value });
+    const r = await authedFetch('/api/stock/watchlist', { method: 'PUT', body: el('watchlist-text').value });
     const j = await r.json();
     if (!r.ok) throw new Error(j.error || r.status);
     st.textContent = `Đã lưu (${j.tickers} mã). Bấm nút tạo báo cáo để chạy lại với danh sách mới.`;

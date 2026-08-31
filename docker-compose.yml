@@ -8,6 +8,7 @@ services:
     mem_limit: 256m
     environment:
       TZ: ${TZ}
+      HUB_UI_TOKEN: ${HUB_UI_TOKEN:-}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ${DATA_ROOT:?DATA_ROOT must be set}/stock-reports:/stockdata
@@ -20,8 +21,10 @@ services:
     mem_limit: 256m
     environment:
       TZ: ${TZ}
+      DOZZLE_AUTH_PROVIDER: simple
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./config/dozzle:/data
     ports:
       - "8081:8080"
     healthcheck:
