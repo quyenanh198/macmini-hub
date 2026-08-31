@@ -20,6 +20,12 @@
 		# cookie đăng nhập của Chat; container ngủ khi không ai chơi.
 		@farm path /farm /farm/*
 		route @farm {
+			# Lưu ý cache: trang chờ của sablier không mang Cache-Control và
+			# plugin ghi response vòng qua middleware `header` của caddy, nên
+			# không ép no-store cho nó được. May là vô hại: URL asset luôn
+			# versioned (?v=<boot>) và chỉ lộ ra từ index.html — thứ chỉ được
+			# serve khi farm đã sống — nên Cloudflare không bao giờ gặp trang
+			# chờ ở một URL asset thật. (Đừng curl tay asset lúc farm ngủ.)
 			sablier http://sablier:10000 {
 				group farm
 				session_duration 15m

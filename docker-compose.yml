@@ -116,6 +116,14 @@ services:
       FARM_INTERNAL_SECRET: ${FARM_INTERNAL_SECRET:-}
     volumes:
       - ${DATA_ROOT:?DATA_ROOT must be set}/farm:/data
+    # Sablier dựa vào healthcheck để biết lúc nào farm thật sự sẵn sàng —
+    # thiếu nó, vài giây đầu sau khi thức dậy vẫn trả trang chờ.
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8090/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   chat:
     image: ghcr.io/quyenanh198/chat:latest
