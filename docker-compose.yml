@@ -111,7 +111,7 @@ services:
       VAPID_PUBLIC_KEY: ${CHAT_VAPID_PUBLIC_KEY:-}
       VAPID_PRIVATE_KEY: ${CHAT_VAPID_PRIVATE_KEY:-}
       VAPID_SUBJECT: mailto:quyenanh198@gmail.com
-      GIF_TENOR_KEY: ${CHAT_TENOR_KEY:-}
+      GIF_GIPHY_KEY: ${CHAT_GIPHY_KEY:-}
     volumes:
       - ${DATA_ROOT:?DATA_ROOT must be set}/chat/db:/data/db
       - ${DATA_ROOT:?DATA_ROOT must be set}/chat/media:/data/media
