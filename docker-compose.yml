@@ -82,6 +82,7 @@ services:
       - sablier.group=cadence
     environment:
       TZ: ${TZ}
+      TTS_STUDIO_URL: http://host.docker.internal:8600
 
   stock-site:
     image: ghcr.io/quyenanh198/stock-site:latest
