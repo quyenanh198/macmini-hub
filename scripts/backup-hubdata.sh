@@ -31,9 +31,21 @@ fi
 STAGE=$(mktemp -d)
 trap 'rm -rf "$STAGE"' EXIT
 
-# 1. Chat DB: bản sao nhất quán (WAL đang mở).
+# 1. Chat DB: bản sao nhất quán. TUYỆT ĐỐI không chạy sqlite3 của host vào DB
+# đang mở trong container — khoá file macOS và VM không thấy nhau qua bind
+# mount, sẽ phá WAL đang chạy (SQLITE_IOERR_SHORT_READ, đã dính 1 lần).
+# Backup từ TRONG container (cùng locking domain); host sqlite3 chỉ khi app tắt.
 mkdir -p "$STAGE/chat-db"
-sqlite3 "$SRC/chat/db/lazybutts.sqlite3" ".backup '$STAGE/chat-db/lazybutts.sqlite3'" >> "$LOG" 2>&1
+if docker ps --format '{{.Names}}' | grep -q '^macmini-hub-chat-1$'; then
+  docker exec macmini-hub-chat-1 node -e '
+    const db = require("better-sqlite3")("/data/db/lazybutts.sqlite3", { readonly: true });
+    db.backup("/data/db/.nightly-backup.sqlite3").then(() => process.exit(0))
+      .catch((e) => { console.error(e); process.exit(1); });
+  ' >> "$LOG" 2>&1
+  mv "$SRC/chat/db/.nightly-backup.sqlite3" "$STAGE/chat-db/lazybutts.sqlite3"
+else
+  sqlite3 "$SRC/chat/db/lazybutts.sqlite3" ".backup '$STAGE/chat-db/lazybutts.sqlite3'" >> "$LOG" 2>&1
+fi
 
 # 2. Toàn bộ hubdata trừ thứ tải lại được.
 rsync -a --exclude 'TTSStudio/models' --exclude 'TTSStudio/cache' --exclude 'TTSStudio/bin' \
