@@ -16,17 +16,20 @@ jobs:
       matrix:
         app: [tts-studio, cadence2, stock-site, chat, ntvv, vmahjong]
     steps:
+      # No recursive submodule checkout: one private submodule would sink the
+      # whole matrix. Each job inits only its own app; if that fails (private
+      # repo the GITHUB_TOKEN can't read, or no submodule at all), the job
+      # skips cleanly instead of failing.
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
-      - name: Skip if app submodule absent
+      - name: Init app submodule (skip if unreachable)
         id: guard
         run: |
-          if [ -f "apps/${{ matrix.app }}/Dockerfile" ]; then
+          if git submodule update --init "apps/${{ matrix.app }}" && [ -f "apps/${{ matrix.app }}/Dockerfile" ]; then
             echo "present=true" >> "$GITHUB_OUTPUT"
           else
             echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::apps/${{ matrix.app }} not buildable (private submodule or missing Dockerfile) — skipped"
           fi
 
       - uses: docker/setup-qemu-action@v3
