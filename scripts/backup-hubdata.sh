@@ -53,13 +53,13 @@ fi
 mkdir -p "$STAGE/farm-db"
 if docker ps --format '{{.Names}}' | grep -q '^macmini-hub-farm-1$'; then
   docker exec macmini-hub-farm-1 node -e '
-    const db = require("better-sqlite3")("/data/farm.sqlite3", { readonly: true });
+    const db = require("better-sqlite3")("/data/farm2.sqlite3", { readonly: true });
     db.backup("/data/.nightly-backup.sqlite3").then(() => process.exit(0))
       .catch((e) => { console.error(e); process.exit(1); });
   ' >> "$LOG" 2>&1
-  mv "$SRC/farm/.nightly-backup.sqlite3" "$STAGE/farm-db/farm.sqlite3"
-elif [ -f "$SRC/farm/farm.sqlite3" ]; then
-  cp "$SRC/farm/farm.sqlite3" "$STAGE/farm-db/farm.sqlite3"
+  mv "$SRC/farm/.nightly-backup.sqlite3" "$STAGE/farm-db/farm2.sqlite3"
+elif [ -f "$SRC/farm/farm2.sqlite3" ]; then
+  cp "$SRC/farm/farm2.sqlite3" "$STAGE/farm-db/farm2.sqlite3"
 fi
 
 # 2. Toàn bộ hubdata trừ thứ tải lại được.
