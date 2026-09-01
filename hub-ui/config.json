@@ -46,6 +46,15 @@
       "icon": "leaf",
       "tint": "green",
       "alert": false
+    },
+    {
+      "name": "VMahjong",
+      "desc": "Mahjong solitaire (in Chat)",
+      "href": "https://chat.lazybutts.com/mahjong/",
+      "container": "macmini-hub-mahjong-1",
+      "icon": "tiles",
+      "tint": "teal",
+      "alert": false
     }
   ],
   "ops": [

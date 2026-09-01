@@ -33,6 +33,16 @@
 			}
 			reverse_proxy farm:8090
 		}
+		# VMahjong: game tĩnh, cùng công thức ngủ/thức như farm.
+		@mahjong path /mahjong /mahjong/*
+		route @mahjong {
+			sablier http://sablier:10000 {
+				group mahjong
+				session_duration 15m
+				dynamic
+			}
+			reverse_proxy mahjong:8080
+		}
 		reverse_proxy chat:8082
 	}
 

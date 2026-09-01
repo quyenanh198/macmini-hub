@@ -125,6 +125,25 @@ services:
       retries: 3
       start_period: 10s
 
+  # VMahjong — mạt chược solitaire, tĩnh hoàn toàn (điểm lưu trên máy người
+  # chơi), sống ở chat.lazybutts.com/mahjong/*, ngủ/thức như farm.
+  mahjong:
+    image: ghcr.io/quyenanh198/vmahjong:latest
+    profiles: [apps]
+    restart: unless-stopped
+    mem_limit: 128m
+    labels:
+      - sablier.enable=true
+      - sablier.group=mahjong
+    environment:
+      TZ: ${TZ}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
   chat:
     image: ghcr.io/quyenanh198/chat:latest
     restart: unless-stopped

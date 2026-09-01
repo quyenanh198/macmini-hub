@@ -13,3 +13,6 @@
 [submodule "apps/ntvv"]
 	path = apps/ntvv
 	url = https://github.com/quyenanh198/ntvv.git
+[submodule "apps/vmahjong"]
+	path = apps/vmahjong
+	url = https://github.com/quyenanh198/VMahjong.git
