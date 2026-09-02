@@ -139,10 +139,11 @@ services:
       TZ: ${TZ}
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
-      interval: 30s
-      timeout: 5s
+      # 5s: sablier blocking chờ tới khi healthy — nginx tĩnh sẵn sàng gần như ngay.
+      interval: 5s
+      timeout: 3s
       retries: 3
-      start_period: 5s
+      start_period: 2s
 
   # Xếp Gạch (BlockPuzzle) — tetris tĩnh, sống ở chat.lazybutts.com/blockpuzzle/*,
   # ngủ/thức như mahjong.
@@ -158,10 +159,11 @@ services:
       TZ: ${TZ}
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
-      interval: 30s
-      timeout: 5s
+      # 5s: sablier blocking chờ tới khi healthy — nginx tĩnh sẵn sàng gần như ngay.
+      interval: 5s
+      timeout: 3s
       retries: 3
-      start_period: 5s
+      start_period: 2s
 
   chat:
     image: ghcr.io/quyenanh198/chat:latest

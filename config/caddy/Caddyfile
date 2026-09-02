@@ -36,20 +36,34 @@
 		# VMahjong: game tĩnh, cùng công thức ngủ/thức như farm.
 		@mahjong path /mahjong /mahjong/*
 		route @mahjong {
+			# `blocking` thay vì `dynamic`: giữ request tới khi container thức
+			# rồi proxy thẳng, KHÔNG bao giờ trả trang chờ. Game này có URL asset
+			# thật không versioned (sw.js, manifest…) — trang chờ lọt vào đó là
+			# Cloudflare cache HTML thay JS suốt 4 tiếng (header caddy không đè
+			# được response của plugin). Container nginx tĩnh thức trong vài giây.
 			sablier http://sablier:10000 {
 				group mahjong
 				session_duration 15m
-				dynamic
+				blocking {
+					timeout 1m
+				}
 			}
 			reverse_proxy mahjong:8080
 		}
 		# Xếp Gạch: game tĩnh, cùng công thức.
 		@blockpuzzle path /blockpuzzle /blockpuzzle/*
 		route @blockpuzzle {
+			# `blocking` thay vì `dynamic`: giữ request tới khi container thức
+			# rồi proxy thẳng, KHÔNG bao giờ trả trang chờ. Game này có URL asset
+			# thật không versioned (sw.js, manifest…) — trang chờ lọt vào đó là
+			# Cloudflare cache HTML thay JS suốt 4 tiếng (header caddy không đè
+			# được response của plugin). Container nginx tĩnh thức trong vài giây.
 			sablier http://sablier:10000 {
 				group blockpuzzle
 				session_duration 15m
-				dynamic
+				blocking {
+					timeout 1m
+				}
 			}
 			reverse_proxy blockpuzzle:8080
 		}
