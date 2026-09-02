@@ -16,3 +16,6 @@
 [submodule "apps/vmahjong"]
 	path = apps/vmahjong
 	url = https://github.com/quyenanh198/VMahjong.git
+[submodule "apps/blockpuzzle"]
+	path = apps/blockpuzzle
+	url = https://github.com/quyenanh198/BlockPuzzle.git

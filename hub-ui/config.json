@@ -55,6 +55,15 @@
       "icon": "tiles",
       "tint": "teal",
       "alert": false
+    },
+    {
+      "name": "Xếp Gạch",
+      "desc": "Tetris (in Chat)",
+      "href": "https://chat.lazybutts.com/blockpuzzle/",
+      "container": "macmini-hub-blockpuzzle-1",
+      "icon": "tiles",
+      "tint": "orange",
+      "alert": false
     }
   ],
   "ops": [

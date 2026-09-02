@@ -144,6 +144,25 @@ services:
       retries: 3
       start_period: 5s
 
+  # Xếp Gạch (BlockPuzzle) — tetris tĩnh, sống ở chat.lazybutts.com/blockpuzzle/*,
+  # ngủ/thức như mahjong.
+  blockpuzzle:
+    image: ghcr.io/quyenanh198/blockpuzzle:latest
+    profiles: [apps]
+    restart: unless-stopped
+    mem_limit: 64m
+    labels:
+      - sablier.enable=true
+      - sablier.group=blockpuzzle
+    environment:
+      TZ: ${TZ}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
   chat:
     image: ghcr.io/quyenanh198/chat:latest
     restart: unless-stopped

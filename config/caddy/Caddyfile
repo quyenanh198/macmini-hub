@@ -43,6 +43,16 @@
 			}
 			reverse_proxy mahjong:8080
 		}
+		# Xếp Gạch: game tĩnh, cùng công thức.
+		@blockpuzzle path /blockpuzzle /blockpuzzle/*
+		route @blockpuzzle {
+			sablier http://sablier:10000 {
+				group blockpuzzle
+				session_duration 15m
+				dynamic
+			}
+			reverse_proxy blockpuzzle:8080
+		}
 		reverse_proxy chat:8082
 	}
 
