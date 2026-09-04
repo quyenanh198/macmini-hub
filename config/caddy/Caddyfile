@@ -28,8 +28,13 @@
 			# chờ ở một URL asset thật. (Đừng curl tay asset lúc farm ngủ.)
 			sablier http://sablier:10000 {
 				group farm
+				# `blocking` thay vì `dynamic` (giống mahjong/blockpuzzle): lúc container
+				# restart/deploy, request chờ chứ không trả trang chờ HTML — Cloudflare từng
+				# cache trang chờ vào URL ảnh (assets/art/tree.png) suốt 4 tiếng → ảnh vỡ.
 				session_duration 45m
-				dynamic
+				blocking {
+					timeout 1m
+				}
 			}
 			reverse_proxy farm:8090
 		}
