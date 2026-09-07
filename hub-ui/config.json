@@ -67,11 +67,11 @@
     },
     {
       "name": "Noto",
-      "desc": "Markdown notes (in Chat)",
+      "desc": "Markdown knowledge base",
       "href": "https://chat.lazybutts.com/noto/",
       "container": "macmini-hub-noto-1",
-      "icon": "book",
-      "tint": "slate",
+      "icon": "note",
+      "tint": "purple",
       "alert": false
     }
   ],
