@@ -64,6 +64,15 @@
       "icon": "tiles",
       "tint": "orange",
       "alert": false
+    },
+    {
+      "name": "Noto",
+      "desc": "Markdown notes (in Chat)",
+      "href": "https://chat.lazybutts.com/noto/",
+      "container": "macmini-hub-noto-1",
+      "icon": "book",
+      "tint": "slate",
+      "alert": false
     }
   ],
   "ops": [

@@ -165,6 +165,24 @@ services:
       retries: 3
       start_period: 2s
 
+  noto:
+    image: ghcr.io/quyenanh198/noto:latest
+    profiles: [apps]
+    restart: unless-stopped
+    mem_limit: 64m
+    labels:
+      - sablier.enable=true
+      - sablier.group=noto
+    environment:
+      TZ: ${TZ}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      # 5s: sablier blocking chờ tới khi healthy — nginx tĩnh sẵn sàng gần như ngay.
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 2s
+
   chat:
     image: ghcr.io/quyenanh198/chat:latest
     restart: unless-stopped

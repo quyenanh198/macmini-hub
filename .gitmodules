@@ -19,3 +19,6 @@
 [submodule "apps/blockpuzzle"]
 	path = apps/blockpuzzle
 	url = https://github.com/quyenanh198/BlockPuzzle.git
+[submodule "apps/noto"]
+	path = apps/noto
+	url = https://github.com/quyenanh198/Noto.git

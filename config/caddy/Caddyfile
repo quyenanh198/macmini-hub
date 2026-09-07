@@ -72,6 +72,21 @@
 			}
 			reverse_proxy blockpuzzle:8080
 		}
+		# Noto: kho ghi chú markdown (tĩnh), cùng công thức ngủ/thức.
+		@noto path /noto /noto/*
+		route @noto {
+			# `blocking` như mahjong/blockpuzzle: giữ request tới khi container
+			# thức rồi proxy thẳng, không bao giờ trả trang chờ (Cloudflare từng
+			# cache trang chờ vào URL asset và giữ 4 tiếng).
+			sablier http://sablier:10000 {
+				group noto
+				session_duration 15m
+				blocking {
+					timeout 1m
+				}
+			}
+			reverse_proxy noto:8080
+		}
 		reverse_proxy chat:8082
 	}
 
