@@ -165,6 +165,7 @@ services:
       retries: 3
       start_period: 2s
 
+  # Noto — kho ghi chú markdown tĩnh, sống ở noto.lazybutts.com, ngủ/thức như mahjong.
   noto:
     image: ghcr.io/quyenanh198/noto:latest
     profiles: [apps]
