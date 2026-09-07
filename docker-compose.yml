@@ -165,12 +165,17 @@ services:
       retries: 3
       start_period: 2s
 
-  # Noto — kho ghi chú markdown tĩnh, sống ở noto.lazybutts.com, ngủ/thức như mahjong.
+  # Noto — kho ghi chú markdown, sống ở noto.lazybutts.com, ngủ/thức như mahjong.
+  # Ghi chú là file .md thật trong ${DATA_ROOT}/noto/vault trên Mac mini (server
+  # Node trong image vừa trả trang vừa mở /api/vault), nên mọi thiết bị mở chung
+  # một kho và dữ liệu được sao lưu như các app khác.
   noto:
     image: ghcr.io/quyenanh198/noto:latest
     profiles: [apps]
     restart: unless-stopped
-    mem_limit: 64m
+    mem_limit: 192m
+    volumes:
+      - ${DATA_ROOT:?DATA_ROOT must be set}/noto:/data
     labels:
       - sablier.enable=true
       - sablier.group=noto
