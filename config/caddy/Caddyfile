@@ -81,6 +81,15 @@
 		reverse_proxy musik:3000
 	}
 
+	# AudioExtract: tách audio (yt-dlp), luôn chạy như Musik; SSE tiến trình cần
+	# flush ngay, không đệm.
+	@audioextract host audioextract.lazybutts.com
+	handle @audioextract {
+		reverse_proxy audioextract:3000 {
+			flush_interval -1
+		}
+	}
+
 	@noto host noto.lazybutts.com
 	handle @noto {
 		route {

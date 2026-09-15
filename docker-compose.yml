@@ -183,6 +183,27 @@ services:
       retries: 3
       start_period: 10s
 
+  # AudioExtract — tách audio từ YouTube/Facebook/TikTok (yt-dlp + ffmpeg), sống ở
+  # audioextract.lazybutts.com. Luôn chạy (không sablier): một lần tải có thể mất
+  # vài phút không có request HTTP nào, sablier sẽ tưởng rảnh mà tắt giữa chừng.
+  # File kết quả giữ 7 ngày trong ${DATA_ROOT}/audioextract/out rồi tự xoá.
+  audioextract:
+    image: ghcr.io/quyenanh198/audioextract:latest
+    restart: unless-stopped
+    mem_limit: 768m
+    environment:
+      TZ: ${TZ}
+      MAX_PARALLEL_DOWNLOADS: "2"
+      KEEP_DAYS: "7"
+    volumes:
+      - ${DATA_ROOT:?DATA_ROOT must be set}/audioextract:/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
   # Noto — kho ghi chú markdown, sống ở noto.lazybutts.com, ngủ/thức như mahjong.
   # Ghi chú là file .md thật trong ${DATA_ROOT}/noto/vault trên Mac mini (server
   # Node trong image vừa trả trang vừa mở /api/vault), nên mọi thiết bị mở chung

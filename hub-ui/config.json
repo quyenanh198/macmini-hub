@@ -82,6 +82,15 @@
       "icon": "music",
       "tint": "purple",
       "alert": true
+    },
+    {
+      "name": "AudioExtract",
+      "desc": "YouTube / TikTok → MP3",
+      "href": "https://audioextract.lazybutts.com/",
+      "container": "macmini-hub-audioextract-1",
+      "icon": "mic",
+      "tint": "teal",
+      "alert": true
     }
   ],
   "ops": [

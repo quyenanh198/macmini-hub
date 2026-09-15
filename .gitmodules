@@ -25,3 +25,6 @@
 [submodule "apps/musik"]
 	path = apps/musik
 	url = https://github.com/quyenanh198/Musik.git
+[submodule "apps/audioextract"]
+	path = apps/audioextract
+	url = https://github.com/quyenanh198/AudioExtract.git
