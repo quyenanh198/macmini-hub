@@ -194,6 +194,8 @@ services:
     environment:
       TZ: ${TZ}
       MAX_PARALLEL_DOWNLOADS: "2"
+      # Đẩy file vừa tách thẳng vào thư viện Musik (nội bộ docker, không qua Access).
+      MUSIK_URL: http://musik:3000
       KEEP_DAYS: "7"
     volumes:
       - ${DATA_ROOT:?DATA_ROOT must be set}/audioextract:/data
