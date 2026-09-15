@@ -73,6 +73,15 @@
       "icon": "note",
       "tint": "purple",
       "alert": false
+    },
+    {
+      "name": "Musik",
+      "desc": "Self-hosted music player",
+      "href": "https://musik.lazybutts.com/",
+      "container": "macmini-hub-musik-1",
+      "icon": "music",
+      "tint": "purple",
+      "alert": true
     }
   ],
   "ops": [

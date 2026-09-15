@@ -22,3 +22,6 @@
 [submodule "apps/noto"]
 	path = apps/noto
 	url = https://github.com/quyenanh198/Noto.git
+[submodule "apps/musik"]
+	path = apps/musik
+	url = https://github.com/quyenanh198/Musik.git

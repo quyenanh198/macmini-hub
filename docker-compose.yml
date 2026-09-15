@@ -165,6 +165,24 @@ services:
       retries: 3
       start_period: 2s
 
+  # Musik — trình phát nhạc tự host, sống ở musik.lazybutts.com. Luôn chạy (không
+  # sablier): đang phát nhạc nền trên điện thoại mà container ngủ thì bài kế tiếp
+  # phải chờ đánh thức và dễ đứt. Nhạc + musik.db nằm ở ${DATA_ROOT}/musik.
+  musik:
+    image: ghcr.io/quyenanh198/musik:latest
+    restart: unless-stopped
+    mem_limit: 256m
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - ${DATA_ROOT:?DATA_ROOT must be set}/musik:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/playlists"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
   # Noto — kho ghi chú markdown, sống ở noto.lazybutts.com, ngủ/thức như mahjong.
   # Ghi chú là file .md thật trong ${DATA_ROOT}/noto/vault trên Mac mini (server
   # Node trong image vừa trả trang vừa mở /api/vault), nên mọi thiết bị mở chung

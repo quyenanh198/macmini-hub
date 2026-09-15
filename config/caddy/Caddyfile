@@ -75,6 +75,12 @@
 		reverse_proxy chat:8082
 	}
 
+	# Musik: trình phát nhạc, luôn chạy (không sablier) để phát nền không bị khựng.
+	@musik host musik.lazybutts.com
+	handle @musik {
+		reverse_proxy musik:3000
+	}
+
 	@noto host noto.lazybutts.com
 	handle @noto {
 		route {
