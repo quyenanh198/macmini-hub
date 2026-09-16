@@ -208,6 +208,25 @@ services:
       retries: 3
       start_period: 15s
 
+  # Gunny — webgame bắn tọa độ (tĩnh, nginx), sống ở gunny.lazybutts.com, ngủ/thức
+  # qua sablier như blockpuzzle; không có dữ liệu cần lưu.
+  gunny:
+    image: ghcr.io/quyenanh198/gunny:latest
+    profiles: [apps]
+    restart: unless-stopped
+    mem_limit: 64m
+    labels:
+      - sablier.enable=true
+      - sablier.group=gunny
+    environment:
+      TZ: ${TZ}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 2s
+
   # Noto — kho ghi chú markdown, sống ở noto.lazybutts.com, ngủ/thức như mahjong.
   # Ghi chú là file .md thật trong ${DATA_ROOT}/noto/vault trên Mac mini (server
   # Node trong image vừa trả trang vừa mở /api/vault), nên mọi thiết bị mở chung

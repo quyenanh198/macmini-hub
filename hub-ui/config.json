@@ -66,6 +66,15 @@
       "alert": false
     },
     {
+      "name": "Gunny",
+      "desc": "Chibi Arena — bắn tọa độ theo lượt",
+      "href": "https://gunny.lazybutts.com/",
+      "container": "macmini-hub-gunny-1",
+      "icon": "target",
+      "tint": "sky",
+      "alert": false
+    },
+    {
       "name": "Noto",
       "desc": "Markdown knowledge base",
       "href": "https://noto.lazybutts.com/",

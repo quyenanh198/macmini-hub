@@ -90,6 +90,21 @@
 		}
 	}
 
+	# Gunny: game tĩnh, ngủ/thức qua sablier (blocking như noto).
+	@gunny host gunny.lazybutts.com
+	handle @gunny {
+		route {
+			sablier http://sablier:10000 {
+				group gunny
+				session_duration 15m
+				blocking {
+					timeout 1m
+				}
+			}
+			reverse_proxy gunny:8080
+		}
+	}
+
 	@noto host noto.lazybutts.com
 	handle @noto {
 		route {
