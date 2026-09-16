@@ -90,19 +90,12 @@
 		}
 	}
 
-	# Gunny: game tĩnh, ngủ/thức qua sablier (blocking như noto).
+	# Gunny: server Node luôn chạy (không sablier — WebSocket /ws giữ trạng thái
+	# phòng/trận, sablier có thể ngủ giữa trận). reverse_proxy tự chuyển tiếp
+	# WebSocket upgrade, không cần cấu hình thêm.
 	@gunny host gunny.lazybutts.com
 	handle @gunny {
-		route {
-			sablier http://sablier:10000 {
-				group gunny
-				session_duration 15m
-				blocking {
-					timeout 1m
-				}
-			}
-			reverse_proxy gunny:8080
-		}
+		reverse_proxy gunny:8080
 	}
 
 	@noto host noto.lazybutts.com
