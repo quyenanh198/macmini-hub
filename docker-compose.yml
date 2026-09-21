@@ -230,7 +230,13 @@ services:
       TZ: ${TZ}
       DATABASE_URL: postgres://gunny:${GUNNY_DB_PASSWORD:?GUNNY_DB_PASSWORD must be set}@gunny-db:5432/gunny
       METRICS_TOKEN: ${GUNNY_METRICS_TOKEN:?GUNNY_METRICS_TOKEN must be set}
-      ALLOWED_ORIGINS: https://gunny.lazybutts.com
+      # Hai đường vào: subdomain riêng, và /gunny/* trong Chat (mượn đăng nhập ở đó).
+      ALLOWED_ORIGINS: https://gunny.lazybutts.com,https://chat.lazybutts.com
+      # Gunny hỏi Chat "cookie lb_session này là ai" để khỏi bắt đặt tên lại.
+      CHAT_API_URL: http://chat:8082
+      # Caddy đã cắt /gunny trước khi vào container; biến này chỉ để cookie phiên của
+      # Gunny bó trong /gunny, không đi kèm mọi request sang Chat.
+      BASE_PATH: /gunny
       MAX_CONNECTIONS_PER_IP: "200"
       HANDSHAKES_PER_MINUTE: "300"
       ROOM_CREATES_PER_MINUTE: "60"

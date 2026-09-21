@@ -72,6 +72,17 @@
 			}
 			reverse_proxy blockpuzzle:8080
 		}
+		# Gunny: game bắn nhau sống ở /gunny/* cùng host để mượn cookie đăng nhập
+		# `lb_session` của Chat — server Gunny hỏi Chat /api/me xem ai đang chơi, không
+		# có secret dùng chung. handle_path cắt tiền tố /gunny nên server Gunny vẫn thấy
+		# /api/*, /ws y như lúc chạy ở gunny.lazybutts.com; client dựng URL theo
+		# document.baseURI nên chạy đúng ở cả hai chỗ.
+		# Không qua sablier (khác ba game trên): giữa trận có thể vài phút không có
+		# request HTTP nào, sablier sẽ tưởng rảnh mà tắt container ngay giữa ván.
+		redir /gunny /gunny/
+		handle_path /gunny/* {
+			reverse_proxy gunny:8080
+		}
 		reverse_proxy chat:8082
 	}
 
