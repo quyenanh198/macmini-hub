@@ -125,6 +125,34 @@ services:
       retries: 3
       start_period: 10s
 
+  # Idle Garden Hero — game idle vườn anh hùng, sống ở chat.lazybutts.com/garden/*.
+  # Tiến trình lưu theo tài khoản Chat (server hỏi Chat /api/me bằng cookie lb_session),
+  # nên đổi máy vẫn chơi tiếp. Ngủ/thức như farm: game idle tự tính phần "vắng mặt" ở
+  # phía trình duyệt, lúc không ai mở thì container không cần chạy.
+  garden:
+    image: ghcr.io/quyenanh198/garden:latest
+    profiles: [apps]
+    restart: unless-stopped
+    mem_limit: 128m
+    labels:
+      - sablier.enable=true
+      - sablier.group=garden
+    environment:
+      TZ: ${TZ}
+      CHAT_API_URL: http://chat:8082
+    volumes:
+      - ${DATA_ROOT:?DATA_ROOT must be set}/garden:/data
+    # Sablier đợi healthy mới thả request qua — thiếu nó, lúc vừa thức sẽ trả trang chờ.
+    # start_interval: trong lúc khởi động hỏi mỗi giây, nên người mở game chỉ chờ ~1-2 giây
+    # thay vì đợi tròn một nhịp 10 giây như trước.
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8095/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+      start_interval: 1s
+
   # VMahjong — mạt chược solitaire, tĩnh hoàn toàn (điểm lưu trên máy người
   # chơi), sống ở chat.lazybutts.com/mahjong/*, ngủ/thức như farm.
   mahjong:

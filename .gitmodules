@@ -31,3 +31,6 @@
 [submodule "apps/gunny"]
 	path = apps/gunny
 	url = https://github.com/quyenanh198/Gunny.git
+[submodule "apps/garden"]
+	path = apps/garden
+	url = https://github.com/quyenanh198/Idle-Garden-Heroes.git

@@ -72,6 +72,24 @@
 			}
 			reverse_proxy blockpuzzle:8080
 		}
+		# Idle Garden Hero: /garden/* cùng host để mượn cookie đăng nhập của Chat — server
+		# game hỏi Chat /api/me rồi lưu tiến trình theo tài khoản. handle_path cắt tiền tố nên
+		# container thấy /, /assets/..., /api/save; client dùng URL tương đối.
+		# `blocking` như farm/mahjong: lúc container đang thức, request chờ chứ không nhận trang
+		# chờ HTML — tránh Cloudflare cache nhầm trang chờ vào URL asset.
+		redir /garden /garden/
+		handle_path /garden/* {
+			route {
+				sablier http://sablier:10000 {
+					group garden
+					session_duration 15m
+					blocking {
+						timeout 1m
+					}
+				}
+				reverse_proxy garden:8095
+			}
+		}
 		# Gunny: game bắn nhau sống ở /gunny/* cùng host để mượn cookie đăng nhập
 		# `lb_session` của Chat — server Gunny hỏi Chat /api/me xem ai đang chơi, không
 		# có secret dùng chung. handle_path cắt tiền tố /gunny nên server Gunny vẫn thấy
