@@ -19,14 +19,16 @@ Stack tích hợp chạy trên Mac Mini (Apple Silicon + OrbStack).
 
 - **Mất đường lùi.** Docker ở đây dùng kho image kiểu containerd: build đè `:latest` là
   bản cũ mất hẳn (container vẫn chạy nó nhưng không tag lại được). Script giữ tag `:live`
-  cho bản đang chạy; lúc thay thì bản đó thành `:previous` + `:backup-<giờ>` (giữ 3 bản).
+  cho bản đang chạy; lúc thay thì bản đó thành `:previous`. Mỗi app chỉ giữ **hai bản**:
+  `:live` (đang chạy) và `:previous` (dự phòng) — bản cũ hơn nữa bị xoá ngay khi có bản
+  mới đè lên.
 - **App qua sablier báo lỗi 15-25 giây.** `up -d` đổi tên container cũ thành
   `<id>_<tên>` trước khi xoá; sablier nhớ cái tên tạm đó và trả `No such container` (kèm
   mã 200!) tới khi tự dò lại. Script xoá hẳn container cũ rồi mới tạo cái mới cùng tên:
   đo thật còn khoảng 1 request lỗi mỗi lần thay, thay vì 11-22.
 
-Script kiểm tra app qua Caddy (đúng mã *và* đúng kiểu nội dung); hỏng thì tự lùi về bản
-đang chạy trước đó và giữ bản hỏng ở tag `failed-<giờ>`. Dữ liệu không lùi theo — có
+Script kiểm tra app qua Caddy (đúng mã *và* đúng kiểu nội dung); hỏng thì in log cuối của
+bản hỏng, tự lùi về bản đang chạy trước đó và xoá bản hỏng. Dữ liệu không lùi theo — có
 backup hằng đêm riêng (`scripts/backup-hubdata.sh`).
 
 ## Cấu trúc

@@ -3,8 +3,9 @@
 #   1. Luôn có đường lùi. Docker trên máy này dùng kho image kiểu containerd: build đè
 #      :latest là bản cũ MẤT HẲN — container vẫn chạy nó nhưng không gọi tên hay tag lại
 #      được nữa. Nên script giữ tag :live trỏ vào bản đang chạy; build đè :latest bao
-#      nhiêu lần thì bản đang chạy vẫn còn tên, lúc thay thì nó thành :previous và
-#      :backup-<giờ>.
+#      nhiêu lần thì bản đang chạy vẫn còn tên, lúc thay thì nó thành :previous.
+#      Mỗi app chỉ giữ đúng HAI bản: :live (đang chạy) và :previous (dự phòng). Bản cũ
+#      hơn nữa bị xoá ngay khi có bản mới đè lên.
 #   2. Thay container theo cách không làm sablier báo lỗi (xem swap_container).
 #   3. Kiểm tra thật qua Caddy: đúng mã và đúng kiểu nội dung — sablier trả lỗi kèm mã
 #      200, chỉ nhìn mã là bị lừa.
@@ -21,7 +22,6 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-KEEP_BACKUPS=3        # số bản backup-<giờ> giữ lại cho mỗi image
 HEALTH_TIMEOUT=120    # giây chờ container healthy
 ROUTE_TIMEOUT=90      # giây chờ Caddy trả đúng trang (app đang ngủ cần thời gian thức)
 
@@ -71,7 +71,6 @@ route_for() {
 
 id_of() { docker image inspect -f '{{.Id}}' "$1" 2>/dev/null || true; }
 revision_of() { docker image inspect -f '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$1" 2>/dev/null || true; }
-stamp() { date +%Y%m%d-%H%M%S; }
 
 running_image_id() {  # image của container đang có (chạy hay đang ngủ), rỗng nếu chưa có
   local cid; cid=$(compose ps -a -q "$svc" 2>/dev/null | head -1)
@@ -80,18 +79,21 @@ running_image_id() {  # image của container đang có (chạy hay đang ngủ)
 
 list_backups() {
   local tag
-  docker images "$repo" --format '{{.Tag}}' | { grep -E '^(live|latest|previous|backup-|failed-)' || true; } | sort |
+  docker images "$repo" --format '{{.Tag}}' | { grep -E '^(live|latest|previous)$' || true; } | sort |
     while read -r tag; do
       printf '%-24s %.19s  commit %-9s %s\n' "$tag" "$(id_of "$repo:$tag")" "$(revision_of "$repo:$tag" | cut -c1-9)" \
         "$(docker image inspect -f '{{.Created}}' "$repo:$tag" | cut -c1-16)"
     done
 }
 
-# Chỉ giữ KEEP_BACKUPS bản backup-<giờ> mới nhất. Gỡ tag chứ không xoá cưỡng bức:
-# image còn container hay tag khác (live/previous) dùng thì vẫn ở nguyên.
-prune_backups() {
-  docker images "$repo" --format '{{.Tag}}' | { grep '^backup-' || true; } | sort -r | tail -n +$((KEEP_BACKUPS + 1)) |
-    while read -r tag; do docker rmi "$repo:$tag" >/dev/null 2>&1 && say "  gỡ bản cũ $repo:$tag" || true; done
+# Chỉ giữ :live và :previous. Bản bị đẩy ra khỏi :previous (và bản hỏng vừa thử) mất hết
+# tag, thành image vô danh — xoá chúng. `image prune` chỉ đụng image vô danh và không bao
+# giờ xoá image mà một container (kể cả đang ngủ) còn dùng. Nó dọn cho cả máy, đúng với
+# chính sách: mỗi app chỉ giữ hai bản có tên.
+prune_old() {
+  local freed
+  freed=$(docker image prune -f 2>/dev/null | awk '/reclaimed/ {print $NF}')
+  [ -z "$freed" ] || [ "$freed" = "0B" ] || say "  xoá bản cũ, giải phóng $freed"
 }
 
 # Sablier theo dõi container theo TÊN. `up -d` thường đổi tên container cũ thành
@@ -156,14 +158,16 @@ switch_to() {
     return 0
   fi
   [ -n "$fallback" ] || die "$svc hỏng và không có bản trước để lùi — xem: docker compose logs $svc"
-  say "✗ bản mới hỏng — tự lùi về bản đang chạy trước đó"
-  docker tag "$target" "$repo:failed-$(stamp)"
+  say "✗ bản mới hỏng — log cuối của nó (không giữ image hỏng lại, chỉ giữ :live và :previous):"
+  compose logs --no-color --tail 20 "$svc" 2>&1 | sed 's/^/    /' || true
+  say "  tự lùi về bản đang chạy trước đó"
   docker tag "$fallback" "$repo:latest"
   # Lần deploy hỏng không được làm mất đường lùi cũ: trả :previous về như trước lúc thử.
   if [ -n "${PREV_BEFORE:-}" ]; then docker tag "$PREV_BEFORE" "$repo:previous"; fi
   if swap_container && wait_healthy && check_route; then
     docker tag "$fallback" "$repo:live"
-    die "đã lùi về bản trước và nó chạy bình thường; bản hỏng giữ ở tag failed-* để xem lại"
+    prune_old
+    die "đã lùi về bản trước và nó chạy bình thường"
   fi
   die "lùi rồi mà bản trước cũng không lên — xem: docker compose logs $svc"
 }
@@ -204,15 +208,13 @@ case "$action" in
     fi
     PREV_BEFORE=$(id_of "$repo:previous")
     if [ -n "$live" ]; then
-      s=$(stamp)
       docker tag "$repo:live" "$repo:previous"
-      docker tag "$repo:live" "$repo:backup-$s"
-      say "• giữ bản đang chạy: $repo:previous (= backup-$s)"
+      say "• giữ bản đang chạy làm dự phòng: $repo:previous"
     else
       say "! bản đang chạy không còn tên (đã bị build đè trước khi có script này) — lần này không có đường lùi"
     fi
     switch_to "$new" "$live"
-    prune_backups
+    prune_old
     say "✓ $svc đã lên bản mới. Hỏng gì thì: scripts/deploy.sh $svc --rollback"
     ;;
 
@@ -224,13 +226,12 @@ case "$action" in
     # Bản đang chạy đổi chỗ thành :previous — lùi nhầm thì chạy --rollback lần nữa là tiến lại.
     docker tag "$repo:previous" "$repo:rollback-target"
     if [ -n "$live" ]; then
-      docker tag "$repo:live" "$repo:backup-$(stamp)"
       docker tag "$repo:live" "$repo:previous"
     fi
     say "↩ lùi $svc về bản trước"
     switch_to "$repo:rollback-target" "$live"
     docker rmi "$repo:rollback-target" >/dev/null 2>&1 || true
-    prune_backups
+    prune_old
     say "✓ $svc đã chạy bản trước. Bản vừa gỡ xuống ở :previous (chạy lại --rollback để tiến lại)."
     ;;
 
