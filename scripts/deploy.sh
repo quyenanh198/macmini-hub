@@ -114,6 +114,18 @@ swap_container() {
   fi
 }
 
+# Container phải thật sự chạy đúng image vừa đưa lên. Trang cũ vẫn trả 200 bình thường,
+# nên chỉ kiểm tra qua Caddy thì một lần deploy "không thay gì cả" trông y như thành công
+# (đã xảy ra với hub-ui: compose dùng tag :local chứ không phải :latest).
+running_is() {
+  local want have
+  want=$(id_of "$1")
+  have=$(running_image_id)
+  [ -n "$want" ] && [ "$have" = "$want" ] && return 0
+  say "  container vẫn chạy image khác (${have:7:12}), không phải bản vừa đưa lên (${want:7:12})"
+  return 1
+}
+
 wait_healthy() {
   local cid status i
   cid=$(compose ps -q "$svc" | head -1)
@@ -152,9 +164,9 @@ check_route() {
 # Đưa image $1 lên. $2 = image để tự lùi về nếu hỏng (rỗng = không có đường lùi).
 switch_to() {
   local target=$1 fallback=${2:-}
-  docker tag "$target" "$repo:latest"
+  docker tag "$target" "$image"
   say "→ thay container $svc$([ "$sablier" = yes ] && echo ' (xoá cái cũ trước — service qua sablier)')"
-  if swap_container && wait_healthy && check_route; then
+  if swap_container && wait_healthy && running_is "$target" && check_route; then
     docker tag "$target" "$repo:live"
     return 0
   fi
@@ -162,10 +174,10 @@ switch_to() {
   say "✗ bản mới hỏng — log cuối của nó (không giữ image hỏng lại, chỉ giữ :live và :previous):"
   compose logs --no-color --tail 20 "$svc" 2>&1 | sed 's/^/    /' || true
   say "  tự lùi về bản đang chạy trước đó"
-  docker tag "$fallback" "$repo:latest"
+  docker tag "$fallback" "$image"
   # Lần deploy hỏng không được làm mất đường lùi cũ: trả :previous về như trước lúc thử.
   if [ -n "${PREV_BEFORE:-}" ]; then docker tag "$PREV_BEFORE" "$repo:previous"; fi
-  if swap_container && wait_healthy && check_route; then
+  if swap_container && wait_healthy && running_is "$fallback" && check_route; then
     docker tag "$fallback" "$repo:live"
     prune_old
     die "đã lùi về bản trước và nó chạy bình thường"
@@ -174,14 +186,14 @@ switch_to() {
 }
 
 # Bản đang chạy có còn tên để lùi về không. Lần đầu dùng script thì chưa có :live;
-# nếu container đang chạy đúng :latest (chưa build đè) thì đặt :live cho nó luôn.
+# nếu container đang chạy đúng image compose khai báo (chưa build đè) thì đặt :live cho nó luôn.
 ensure_live() {
   local running latest
   [ -z "$(id_of "$repo:live")" ] || return 0
   running=$(running_image_id)
-  latest=$(id_of "$repo:latest")
+  latest=$(id_of "$image")
   if [ -n "$running" ] && [ "$running" = "$latest" ]; then
-    docker tag "$repo:latest" "$repo:live"
+    docker tag "$image" "$repo:live"
   fi
 }
 
@@ -196,12 +208,12 @@ case "$action" in
     if [ "$action" = --build ]; then
       [ -d "$context" ] || die "không thấy thư mục build $context"
       rev=$(git -C "$context" rev-parse --short HEAD 2>/dev/null || echo unknown)
-      [ -z "$(git -C "$context" status --porcelain 2>/dev/null)" ] || rev="$rev-dirty"
+      [ -z "$(git -C "$context" status --porcelain -- . 2>/dev/null)" ] || rev="$rev-dirty"
       say "• build $repo từ $context (commit $rev)"
-      docker build -q --label "org.opencontainers.image.revision=$rev" -t "$repo:latest" "$context" >/dev/null
+      docker build -q --label "org.opencontainers.image.revision=$rev" -t "$image" "$context" >/dev/null
     fi
-    new=$(id_of "$repo:latest")
-    [ -n "$new" ] || die "chưa có image $repo:latest — build trước, hoặc dùng --build"
+    new=$(id_of "$image")
+    [ -n "$new" ] || die "chưa có image $image — build trước, hoặc dùng --build"
     live=$(id_of "$repo:live")
     if [ -n "$live" ] && [ "$live" = "$new" ] && [ "$(running_image_id)" = "$new" ]; then
       say "= $svc đang chạy đúng bản này rồi, không có gì để đổi"
@@ -211,6 +223,8 @@ case "$action" in
     if [ -n "$live" ]; then
       docker tag "$repo:live" "$repo:previous"
       say "• giữ bản đang chạy làm dự phòng: $repo:previous"
+    elif [ -z "$(running_image_id)" ]; then
+      say "• service mới, chưa có bản nào chạy trước đó — lần này không có gì để lùi về"
     else
       say "! bản đang chạy không còn tên (đã bị build đè trước khi có script này) — lần này không có đường lùi"
     fi
