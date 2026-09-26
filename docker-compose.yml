@@ -315,6 +315,10 @@ services:
       ALLOWED_ORIGINS: https://chat.lazybutts.com
       # GET /status?token=... để xem số phòng và kết nối; bỏ trống thì tắt.
       STATUS_TOKEN: ${WORMS_STATUS_TOKEN:-}
+      # Vàng, đồ đã mua và trang phục theo tài khoản Chat (SQLite). Chỉ server Worms ghi file này.
+      WORMS_DB: /data/worms.db
+    volumes:
+      - ${DATA_ROOT:?DATA_ROOT must be set}/worms:/data
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
       interval: 10s
