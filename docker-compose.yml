@@ -296,6 +296,32 @@ services:
       retries: 5
       start_period: 10s
 
+  # Worms — game bắn pháo theo lượt (3D, online), sống ở chat.lazybutts.com/worms/*
+  # để dùng chung cookie `lb_session` của Chat. Image do repo Worms tự build (có sẵn
+  # bản Web của Unity bên trong) nên deploy bằng pull, KHÔNG dùng --build:
+  #   docker compose pull worms && scripts/deploy.sh worms
+  # Không qua sablier (giống Gunny): phiên WebSocket giữ trạng thái trận, sablier có
+  # thể tắt container giữa trận. Trạng thái trận chỉ ở trong RAM: deploy lúc đang có
+  # trận thì trận đó mất, người chơi tự nối lại vào sảnh.
+  worms:
+    image: ghcr.io/quyenanh198/worms:latest
+    restart: unless-stopped
+    mem_limit: 384m
+    environment:
+      TZ: ${TZ}
+      # Worms hỏi Chat "cookie lb_session này là ai" (GET /api/me), không có secret dùng chung.
+      CHAT_API_URL: http://chat:8082
+      # Trình duyệt chỉ được mở WebSocket từ trang của Chat; app native không gửi Origin.
+      ALLOWED_ORIGINS: https://chat.lazybutts.com
+      # GET /status?token=... để xem số phòng và kết nối; bỏ trống thì tắt.
+      STATUS_TOKEN: ${WORMS_STATUS_TOKEN:-}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
   # Noto — kho ghi chú markdown, sống ở noto.lazybutts.com, ngủ/thức như mahjong.
   # Ghi chú là file .md thật trong ${DATA_ROOT}/noto/vault trên Mac mini (server
   # Node trong image vừa trả trang vừa mở /api/vault), nên mọi thiết bị mở chung

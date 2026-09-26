@@ -66,6 +66,15 @@
       "alert": false
     },
     {
+      "name": "Worms",
+      "desc": "Bắn pháo theo lượt, 3D online (in Chat)",
+      "href": "https://chat.lazybutts.com/worms/",
+      "container": "macmini-hub-worms-1",
+      "icon": "target",
+      "tint": "green",
+      "alert": false
+    },
+    {
       "name": "Gunny",
       "desc": "Chibi Arena — bắn tọa độ theo lượt",
       "href": "https://gunny.lazybutts.com/",

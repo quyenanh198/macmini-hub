@@ -59,6 +59,7 @@ route_for() {
     mahjong)      echo "chat.lazybutts.com /mahjong/ text/html" ;;
     blockpuzzle)  echo "chat.lazybutts.com /blockpuzzle/ text/html" ;;
     garden)       echo "chat.lazybutts.com /garden/ text/html" ;;
+    worms)        echo "chat.lazybutts.com /worms/ text/html" ;;
     musik)        echo "musik.lazybutts.com /api/health application/json" ;;
     audioextract) echo "audioextract.lazybutts.com / text/html" ;;
     gunny)        echo "gunny.lazybutts.com /readyz application/json" ;;

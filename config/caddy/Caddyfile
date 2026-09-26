@@ -101,6 +101,14 @@
 		handle_path /gunny/* {
 			reverse_proxy gunny:8080
 		}
+		# Worms: game 3D online, sống ở /worms/* cùng host để mượn cookie `lb_session`
+		# của Chat — server Worms hỏi Chat /api/me xem ai đang chơi. handle_path cắt tiền
+		# tố /worms nên container thấy /, /ws, /healthz, /download; bản Web dùng đường
+		# dẫn tương đối. Không qua sablier vì WebSocket giữ trận (giống Gunny).
+		redir /worms /worms/
+		handle_path /worms/* {
+			reverse_proxy worms:8080
+		}
 		reverse_proxy chat:8082
 	}
 
