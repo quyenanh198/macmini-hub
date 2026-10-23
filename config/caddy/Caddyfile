@@ -36,7 +36,14 @@
 					timeout 1m
 				}
 			}
-			reverse_proxy farm:8090
+			# Người chơi luôn vào qua HTTPS (Cloudflare → cloudflared), nhưng cloudflared
+			# nói chuyện với caddy bằng HTTP nên caddy tự điền X-Forwarded-Proto: http.
+			# Farm từ chối mọi thao tác POST có Origin khác scheme+host của chính nó
+			# (chống CSRF), nên phải báo đúng là https — thiếu dòng này thì thu hoạch,
+			# gieo, bán... đều trả 403 cross_origin_request.
+			reverse_proxy farm:8090 {
+				header_up X-Forwarded-Proto https
+			}
 		}
 		# VMahjong: game tĩnh, cùng công thức ngủ/thức như farm.
 		@mahjong path /mahjong /mahjong/*
