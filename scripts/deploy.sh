@@ -56,6 +56,7 @@ route_for() {
     hub-ui)       echo "lazybutts.com / text/html" ;;
     chat)         echo "chat.lazybutts.com / text/html" ;;
     farm)         echo "chat.lazybutts.com /farm/ text/html" ;;
+    serpent)      echo "chat.lazybutts.com /serpent/ text/html" ;;
     mahjong)      echo "chat.lazybutts.com /mahjong/ text/html" ;;
     blockpuzzle)  echo "chat.lazybutts.com /blockpuzzle/ text/html" ;;
     garden)       echo "chat.lazybutts.com /garden/ text/html" ;;

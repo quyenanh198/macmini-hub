@@ -153,6 +153,31 @@ services:
       start_period: 10s
       start_interval: 1s
 
+  # Serpent Siege — bắn rắn kiểu Zuma, sống ở chat.lazybutts.com/serpent/*. Người chơi là
+  # tài khoản Chat: hook PocketBase hỏi Chat /api/me bằng cookie lb_session rồi lưu tiến
+  # trình theo tài khoản (một hồ sơ mỗi người, API records chung bị khoá). Ngủ/thức như
+  # garden: không có WebSocket, game tự lưu sau mỗi màn.
+  serpent:
+    image: ghcr.io/quyenanh198/serpent-siege:latest
+    profiles: [apps]
+    restart: unless-stopped
+    mem_limit: 128m
+    labels:
+      - sablier.enable=true
+      - sablier.group=serpent
+    environment:
+      TZ: ${TZ}
+      CHAT_API_URL: http://chat:8082
+    volumes:
+      - ${DATA_ROOT:?DATA_ROOT must be set}/serpent:/pb/pb_data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8090/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+      start_interval: 1s
+
   # VMahjong — mạt chược solitaire, tĩnh hoàn toàn (điểm lưu trên máy người
   # chơi), sống ở chat.lazybutts.com/mahjong/*, ngủ/thức như farm.
   mahjong:

@@ -97,6 +97,30 @@
 				reverse_proxy garden:8095
 			}
 		}
+		# Serpent Siege: /serpent/* cùng host để mượn cookie đăng nhập của Chat — hook
+		# PocketBase hỏi Chat /api/me và chỉ mở /api/serpent/*. Trang admin của PocketBase
+		# (/_/) và mọi API khác (đăng nhập superuser, records...) không được ra internet.
+		# handle_path cắt tiền tố; client dùng URL tương đối. Ngủ/thức như garden.
+		# (Chặn nằm trong `route` để chạy trước sablier — đặt ngoài thì `handle_path` được
+		# Caddy xếp chạy trước `respond`, lệnh chặn sẽ không bao giờ tới lượt.)
+		redir /serpent /serpent/
+		handle_path /serpent/* {
+			@serpentPrivate {
+				path /_ /_/* /api/*
+				not path /api/serpent/* /api/health
+			}
+			route {
+				respond @serpentPrivate 404
+				sablier http://sablier:10000 {
+					group serpent
+					session_duration 15m
+					blocking {
+						timeout 1m
+					}
+				}
+				reverse_proxy serpent:8090
+			}
+		}
 		# Gunny: game bắn nhau sống ở /gunny/* cùng host để mượn cookie đăng nhập
 		# `lb_session` của Chat — server Gunny hỏi Chat /api/me xem ai đang chơi, không
 		# có secret dùng chung. handle_path cắt tiền tố /gunny nên server Gunny vẫn thấy

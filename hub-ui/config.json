@@ -75,6 +75,15 @@
       "alert": false
     },
     {
+      "name": "Serpent Siege",
+      "desc": "Bắn rắn kiểu Zuma (in Chat)",
+      "href": "https://chat.lazybutts.com/serpent/",
+      "container": "macmini-hub-serpent-1",
+      "icon": "target",
+      "tint": "teal",
+      "alert": false
+    },
+    {
       "name": "Gunny",
       "desc": "Chibi Arena — bắn tọa độ theo lượt",
       "href": "https://gunny.lazybutts.com/",

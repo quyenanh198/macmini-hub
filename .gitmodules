@@ -34,3 +34,6 @@
 [submodule "apps/garden"]
 	path = apps/garden
 	url = https://github.com/quyenanh198/Idle-Garden-Heroes.git
+[submodule "apps/serpent-siege"]
+	path = apps/serpent-siege
+	url = https://github.com/quyenanh198/Serpent-Siege.git
